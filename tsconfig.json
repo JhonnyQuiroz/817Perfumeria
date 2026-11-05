@@ -1,0 +1,1 @@
+{"compilerOptions":{"outDir":"./dist/out-tsc","strict":true,"skipLibCheck":true,"experimentalDecorators":true,"target":"ES2022","module":"preserve","lib":["ES2022","dom"],"useDefineForClassFields":false},"angularCompilerOptions":{"strictTemplates":true,"strictInjectionParameters":true}}
