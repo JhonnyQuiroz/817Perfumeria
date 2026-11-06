@@ -1,34 +1,40 @@
-# Nova — Landing page Angular para Vercel
+# Catálogo — Angular + Google Sheets
 
-Landing page responsive de demostración construida con Angular standalone.
+Catálogo estático: los productos y precios se leen desde un Google Sheet publicado como CSV. No hay base de datos ni servidor.
 
-## Requisitos
-Node.js 20.19+ o 22.12+ y npm.
+## 1. Preparar el Google Sheet
+Primera fila (el orden de columnas no importa):
 
-## Ejecutar localmente
+| nombre | descripcion | precio | categoria | imagen | disponible | destacado |
+|---|---|---|---|---|---|---|
+
+- `precio`: número (25000 o 25.000). Si pones texto ("Consultar") se muestra tal cual.
+- `imagen`: URL pública o ruta del proyecto (ej. `/img/foto1.jpg`). Evita enlaces de Google Drive.
+- `disponible`: `no` marca el producto como agotado. `destacado`: `si` muestra la etiqueta.
+- **Usa una hoja solo con lo que quieras mostrar**: al publicarla, cualquiera con la URL puede verla.
+
+Publicar: Archivo → Compartir → Publicar en la web → elige la pestaña → formato **CSV** → Publicar. Copia la URL.
+
+## 2. Configurar
+Edita `src/config.ts`: pega la URL en `sheetCsvUrl` y pon tu número en `whatsapp`.
+
+## 3. Cambiar el diseño
+- Colores: variables al inicio de `src/styles.css` (`:root`).
+- Textos y estructura: `src/main.ts`.
+- Los datos (Sheet) y el diseño están separados: puedes rehacer uno sin tocar el otro.
+
+## Ejecutar y compilar
+Requiere Node 20.19+ o 22.12+.
 ```bash
 npm install
-npm start
+npm start        # http://localhost:4200
+npm run build    # salida: dist/landing-angular/browser
 ```
-Abre http://localhost:4200.
 
-## Build
-```bash
-npm run build
-```
-La salida está en `dist/landing-angular/browser`.
+## Publicar (Cloudflare Pages / Netlify)
+- Build command: `npm run build`
+- Output directory: `dist/landing-angular/browser`
+- Variable de entorno `NODE_VERSION=22` si la plataforma no lee `.node-version`.
+- Luego agrega tu dominio en "Custom domains".
 
-## Publicar en Vercel
-1. Sube esta carpeta a un repositorio de GitHub.
-2. En Vercel selecciona **Add New → Project** e importa el repositorio.
-3. Configura Build Command: `npm run build`.
-4. Configura Output Directory: `dist/landing-angular/browser`.
-5. Despliega. `vercel.json` ya incluye estos valores y una regla SPA para devolver `index.html`.
-
-## Personalización
-- Contenido y estructura: `src/main.ts`.
-- Estilos y colores: `src/styles.css`.
-- Título y metadatos: `src/index.html`.
-
-## Formulario
-El formulario valida campos y muestra un mensaje de demostración. No envía información; conecta un backend o proveedor de formularios para recibir mensajes reales.
+Nota: el plan Hobby de Vercel es solo para uso no comercial; para el catálogo de un negocio usa Cloudflare Pages o Netlify (o el plan Pro de Vercel).
