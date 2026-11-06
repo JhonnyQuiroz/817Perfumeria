@@ -56,7 +56,7 @@ export class AppComponent implements OnInit {
  private wa=`https://wa.me/${CONFIG.whatsapp}`;
  private money=new Intl.NumberFormat(CONFIG.locale,{style:'currency',currency:CONFIG.currency,maximumFractionDigits:0});
 
- get categories(): string[] { return ['Todos',...new Set(this.products.map(p=>p.category))]; }
+ get categories(): string[] { return ['Todos', 'Inspirados', 'Replica 1.1', 'Original']; }
  get filtered(): Product[] { return this.category==='Todos'?this.products:this.products.filter(p=>p.category===this.category); }
  priceLabel(p: Product): string { return p.price!==null?this.money.format(p.price):(p.priceText||'Consultar'); }
  waLink(p: Product): string { return `${this.wa}?text=${encodeURIComponent(CONFIG.orderMessage+p.name)}`; }

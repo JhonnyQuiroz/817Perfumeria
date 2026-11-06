@@ -5,10 +5,10 @@ export const CONFIG = {
   // URL de tu Google Sheet publicado como CSV:
   //   Archivo → Compartir → Publicar en la web → elige la pestaña → formato CSV → Publicar
   // Déjalo vacío ('') para ver productos de demostración.
-  sheetCsvUrl: '',
+  sheetCsvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQMoQARQcCP7ZHuHkl_Bo3eOXhRMenxqv06Nj-mj8PUmFRyMiPC_i982UM_crBkGh-RUgGzBF3dL6hm/pubhtml?gid=0&single=true',
 
   // Número de WhatsApp con indicativo de país y sin "+" ni espacios (Colombia = 57)
-  whatsapp: '573000000000',
+  whatsapp: '573004904152',
 
   // Formato de precios
   currency: 'COP',
@@ -22,7 +22,7 @@ export const CONFIG = {
 //  TEXTOS DEL SITIO — edita aquí para cambiar de marca o temática
 // ============================================================
 export const SITE = {
-  brand: 'Mi Marca',
+  brand: '817 Perfumería',
   eyebrow: 'Catálogo · Colombia',
   titleStart: 'Encuentra lo que ',
   titleEm: 'realmente',
@@ -37,7 +37,7 @@ export const SITE = {
     { value: 'COP', label: 'Precios con IVA incluido' },
   ],
   catalogLabel: 'Catálogo',
-  catalogTitle: 'Nuestros productos',
+  catalogTitle: 'Perfumes originales',
   howLabel: 'Cómo funciona',
   howTitle: 'Pedir es sencillo',
   info: [
