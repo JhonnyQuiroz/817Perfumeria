@@ -19,8 +19,10 @@ Publicar: Archivo → Compartir → Publicar en la web → elige la pestaña →
 Edita `src/config.ts`: pega la URL en `sheetCsvUrl` y pon tu número en `whatsapp`.
 
 ## 3. Cambiar el diseño
-- Colores: variables al inicio de `src/styles.css` (`:root`).
-- Textos y estructura: `src/main.ts`.
+- Colores y tipografías: variables al inicio de `src/styles.css` (`:root`).
+- Textos del sitio (marca, titular, estadísticas, pasos): `SITE` en `src/config.ts`.
+- Imagen principal: guarda tu archivo como `public/img/hero.jpg`.
+- Estructura HTML: `src/main.ts`.
 - Los datos (Sheet) y el diseño están separados: puedes rehacer uno sin tocar el otro.
 
 ## Ejecutar y compilar

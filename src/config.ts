@@ -17,3 +17,33 @@ export const CONFIG = {
   // Texto que se envía por WhatsApp al pedir un producto
   orderMessage: 'Hola, me interesa este producto: ',
 };
+
+// ============================================================
+//  TEXTOS DEL SITIO — edita aquí para cambiar de marca o temática
+// ============================================================
+export const SITE = {
+  brand: 'Mi Marca',
+  eyebrow: 'Catálogo · Colombia',
+  titleStart: 'Encuentra lo que ',
+  titleEm: 'realmente',
+  titleEnd: ' quieres.',
+  heroText: 'Una selección cuidada de productos originales. Explora el catálogo, elige y pide directamente por WhatsApp.',
+  // Imagen del hero: pon tu archivo en public/img/ (ej. /img/hero.jpg). Déjalo '' para usar el fondo decorativo.
+  heroImage: '/img/hero.jpg',
+  heroImageAlt: 'Imagen principal del catálogo',
+  stats: [
+    { value: '100%', label: 'Productos originales' },
+    { value: '24 h', label: 'Respuesta por WhatsApp' },
+    { value: 'COP', label: 'Precios con IVA incluido' },
+  ],
+  catalogLabel: 'Catálogo',
+  catalogTitle: 'Nuestros productos',
+  howLabel: 'Cómo funciona',
+  howTitle: 'Pedir es sencillo',
+  info: [
+    { title: 'Elige', text: 'Explora el catálogo y filtra por categoría para encontrar lo que buscas.' },
+    { title: 'Escríbenos', text: 'Con un clic te llevamos a WhatsApp con el producto ya mencionado.' },
+    { title: 'Recíbelo', text: 'Coordinamos pago y envío a todo el país.' },
+  ],
+  footerNote: 'Precios en COP, sujetos a cambio sin previo aviso.',
+};
