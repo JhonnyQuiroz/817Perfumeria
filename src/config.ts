@@ -51,7 +51,7 @@ export const SITE = {
   heroText: 'Una selección cuidada de productos originales. Explora el catálogo, elige y pide directamente por WhatsApp.',
   // Imagen del hero: pega aquí el ENLACE de la imagen (debe empezar por https://).
   // Déjalo '' para usar el fondo decorativo. Ejemplo: 'https://res.cloudinary.com/tu-cuenta/image/upload/hero.jpg'
-  heroImage: '',
+  heroImage: 'https://scontent.cdninstagram.com/v/t51.82787-19/718726423_17915920845386464_6042553732865608044_n.jpg?stp=dst-jpg_s150x150_tt6&_nc_cat=104&ig_cache_key=GBfl1irgMtBhb6Y-AGxJqu_adttTbmNDAQAB1501500j-ccb7-5&ccb=7-5&_nc_sid=669407&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDgwLkMyIn0%3D&_nc_ohc=ZXWb9Q5AkL0Q7kNvwF38thK&_nc_oc=AdoIndJhwZLKGgv6zQ2Qe05jdW-Lb_6W-_A8PrVDfhDf3_2kzGaKNDKE12daJ3ate2s&_nc_zt=24&_nc_ht=scontent.cdninstagram.com&_nc_gid=Otq7DIUaQiSADFwvN6iSXg&_nc_ss=7b689&oh=00_AQRDYoD7fMk3Wol_KecNtal2Npm18vKThcDCn1XH4O0TaA&oe=6AF34C14',
   heroImageAlt: 'Imagen principal del catálogo',
   stats: [
     { value: '100%', label: 'Productos originales' },
