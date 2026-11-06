@@ -5,7 +5,7 @@ export const CONFIG = {
   // URL de tu Google Sheet publicado como CSV:
   //   Archivo → Compartir → Publicar en la web → elige la pestaña → formato CSV → Publicar
   // Déjalo vacío ('') para ver productos de demostración.
-  sheetCsvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQMoQARQcCP7ZHuHkl_Bo3eOXhRMenxqv06Nj-mj8PUmFRyMiPC_i982UM_crBkGh-RUgGzBF3dL6hm/pub?output=ods',
+  sheetCsvUrl: '',
 
   // Número de WhatsApp con indicativo de país y sin "+" ni espacios (Colombia = 57)
   whatsapp: '573004904152',
