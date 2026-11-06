@@ -1,3 +1,5 @@
+import { productId } from './order-code';
+
 export interface Product {
   name: string;
   description: string;
@@ -7,27 +9,36 @@ export interface Product {
   image: string;
   available: boolean;
   featured: boolean;
+  /** Precios por tamaño, desde columnas opcionales como precio_30ml, precio_60ml... */
+  sizePrices: Record<string, number>;
+  /** Valor de la columna `codigo` del Sheet (identificador estable del producto). */
+  code: string;
+  /** Id numérico de 16 bits usado dentro del código de pedido. */
+  pid: number;
 }
 
 // Columnas de la hoja (el orden no importa, se detectan por el nombre del encabezado)
-const ALIASES: Record<keyof Product, string[]> = {
+const ALIASES: Record<'name' | 'description' | 'price' | 'category' | 'image' | 'available' | 'featured' | 'code', string[]> = {
   name: ['nombre', 'producto', 'name'],
   description: ['descripcion', 'detalle', 'description'],
   price: ['precio', 'valor', 'price'],
-  priceText: [],
   category: ['categoria', 'category'],
   image: ['imagen', 'foto', 'image', 'img'],
   available: ['disponible', 'stock', 'available'],
   featured: ['destacado', 'featured'],
+  code: ['codigo', 'code', 'sku', 'ref', 'referencia'],
 };
 
-export const DEMO_CSV = `nombre,descripcion,precio,categoria,imagen,disponible,destacado
-Producto de ejemplo 1,"Descripción corta del producto, con coma incluida",25000,Categoría A,,si,si
-Producto de ejemplo 2,Otra descripción de ejemplo,48.500,Categoría A,,si,no
-Producto de ejemplo 3,Este producto está agotado,12900,Categoría B,,no,no
-Producto de ejemplo 4,Precio a convenir,Consultar,Categoría B,,si,no`;
+export const DEMO_CSV = `codigo,nombre,descripcion,precio,categoria,imagen,disponible,destacado,precio_30ml,precio_60ml,precio_100ml
+101,Producto de ejemplo 1,"Descripción corta del producto, con coma incluida",,Inspirados,,si,si,35000,60000,85000
+102,Producto de ejemplo 2,Otra descripción de ejemplo,,Inspirados,,si,no,32000,55000,80000
+103,Producto de ejemplo 3,Este producto está agotado,129000,Original,,no,no,,,
+104,Producto de ejemplo 4,Precio a convenir,Consultar,Original,,si,no,,,`;
 
-const norm = (s: string): string =>
+/** Clave de tamaño: "30 ml", "30ML" y "30ml" son lo mismo. */
+export const sizeKey = (s: string): string => s.replace(/\s+/g, '').toLowerCase();
+
+export const norm = (s: string): string =>
   s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 
 /** Parser CSV mínimo: soporta comillas, comas y saltos de línea dentro de celdas. */
@@ -73,23 +84,32 @@ export function parsePrice(raw: string): number | null {
 export function toProducts(rows: string[][]): Product[] {
   if (rows.length < 2) return [];
   const header = rows[0].map(norm);
-  const col = (key: keyof Product): number =>
+  const col = (key: keyof typeof ALIASES): number =>
     header.findIndex(h => ALIASES[key].includes(h));
+  // Columnas opcionales de precio por tamaño: precio_30ml, precio 60 ml, precio100ml...
+  const sizeCols: [string, number][] = [];
+  header.forEach((h, i) => {
+    const m = /^precio[\s_-]*(\d+)\s*ml$/.exec(h);
+    if (m) sizeCols.push([m[1] + 'ml', i]);
+  });
   const idx = {
     name: col('name'), description: col('description'), price: col('price'),
     category: col('category'), image: col('image'),
-    available: col('available'), featured: col('featured'),
+    available: col('available'), featured: col('featured'), code: col('code'),
   };
   const get = (r: string[], i: number): string => (i >= 0 ? (r[i] ?? '').trim() : '');
 
-  return rows.slice(1).flatMap((r): Product[] => {
+  const list = rows.slice(1).flatMap((r): Product[] => {
     const name = get(r, idx.name);
     if (!name) return [];
     const priceText = get(r, idx.price);
     const avail = norm(get(r, idx.available));
     const feat = norm(get(r, idx.featured));
+    const code = get(r, idx.code);
     return [{
       name,
+      code,
+      pid: productId(code, name),
       description: get(r, idx.description),
       price: parsePrice(priceText),
       priceText,
@@ -97,6 +117,21 @@ export function toProducts(rows: string[][]): Product[] {
       image: get(r, idx.image),
       available: !['no', 'false', '0', 'agotado', 'n'].includes(avail),
       featured: ['si', 'yes', 'true', '1', 'x', 's'].includes(feat),
+      sizePrices: Object.fromEntries(
+        sizeCols.flatMap(([k, i]): [string, number][] => {
+          const n = parsePrice(get(r, i));
+          return n === null ? [] : [[k, n]];
+        }),
+      ),
     }];
   });
+  // Avisos para el dueño del catálogo (aparecen en la consola del navegador)
+  const seen = new Map<number, string>();
+  for (const p of list) {
+    if (!p.code) console.warn(`[catálogo] "${p.name}" no tiene valor en la columna "codigo": su id se deriva del nombre.`);
+    const other = seen.get(p.pid);
+    if (other) console.warn(`[catálogo] "${p.name}" y "${other}" comparten el mismo código (${p.pid}). Los pedidos no podrán distinguirlos.`);
+    seen.set(p.pid, p.name);
+  }
+  return list;
 }

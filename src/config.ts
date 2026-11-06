@@ -14,8 +14,29 @@ export const CONFIG = {
   currency: 'COP',
   locale: 'es-CO',
 
-  // Texto que se envía por WhatsApp al pedir un producto
+  // Inicio del mensaje de WhatsApp. Después va un producto por línea y al final el código:
+  //   Hola, me interesa este producto:
+  //   - Mandarin Sky (30 ml): 2
+  //   - Oud Wood (60 ml)
+  //
+  //   Código de pedido: PED-XXXXX-XXXXX-...
+  // (la cantidad solo aparece si es mayor a 1)
   orderMessage: 'Hola, me interesa este producto: ',
+
+  // Código de pedido (ver README → "Rastrear pedidos").
+  //  - orderSecret: frase propia, cámbiala ANTES de publicar. Si la cambias después, los códigos
+  //    anteriores ya no se podrán consultar.
+  //  - orderPrefix: letras con las que empieza el código (ej. PED-XXXXX-...).
+  orderSecret: 'k7Qx-2Vm9-Rt4Pz-817',
+  orderPrefix: 'PED',
+  timeZone: 'America/Bogota',
+
+  // Tamaños disponibles por categoría. Las categorías que no estén aquí no muestran selector.
+  // Precios por tamaño (opcional): agrega al Sheet columnas precio_30ml, precio_60ml, precio_100ml.
+  // Si un tamaño no tiene precio en esas columnas, se usa el de la columna "precio".
+  sizes: {
+    Inspirados: ['30 ml', '60 ml', '100 ml'],
+  } as Record<string, string[]>,
 };
 
 // ============================================================
@@ -28,8 +49,9 @@ export const SITE = {
   titleEm: 'realmente',
   titleEnd: ' quieres.',
   heroText: 'Una selección cuidada de productos originales. Explora el catálogo, elige y pide directamente por WhatsApp.',
-  // Imagen del hero: pon tu archivo en public/img/ (ej. /img/hero.jpg). Déjalo '' para usar el fondo decorativo.
-  heroImage: '/img/hero.jpg',
+  // Imagen del hero: pega aquí el ENLACE de la imagen (debe empezar por https://).
+  // Déjalo '' para usar el fondo decorativo. Ejemplo: 'https://res.cloudinary.com/tu-cuenta/image/upload/hero.jpg'
+  heroImage: '',
   heroImageAlt: 'Imagen principal del catálogo',
   stats: [
     { value: '100%', label: 'Productos originales' },
@@ -42,7 +64,7 @@ export const SITE = {
   howTitle: 'Pedir es sencillo',
   info: [
     { title: 'Elige', text: 'Explora el catálogo y filtra por categoría para encontrar lo que buscas.' },
-    { title: 'Escríbenos', text: 'Con un clic te llevamos a WhatsApp con el producto ya mencionado.' },
+    { title: 'Escríbenos', text: 'Agrega tus productos al pedido y envíalo por WhatsApp con un clic.' },
     { title: 'Recíbelo', text: 'Coordinamos pago y envío a todo el país.' },
   ],
   footerNote: 'Precios en COP, sujetos a cambio sin previo aviso.',
