@@ -121,7 +121,7 @@ export class AppComponent implements OnInit {
  decErr=''; decRes: Decoded|null=null; copied=false;
  @HostListener('window:hashchange') onHash(): void { this.showDecoder=location.hash==='#decodificar'; }
 
- get categories(): string[] { return ['Todos', 'Inspirados', 'Replica 1.1', 'Original']; }
+ get categories(): string[] { return ['Todos', 'Inspirados', 'Replica 1.1', 'Original', 'Dama', 'Caballero']; }
 
  fmt(n: number): string { return this.money.format(n); }
  pct(n: number): string { return new Intl.NumberFormat(CONFIG.locale,{maximumFractionDigits:1}).format(n)+'%'; }
