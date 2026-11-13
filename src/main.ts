@@ -27,10 +27,7 @@ const STORE_KEY = 'cart-v1';
     <button type="button" class="btn" (click)="copyRow(decRes.row)">{{copied?'Copiado ✓':'Copiar fila para Excel'}}</button>
    </div>}
   </section>}
-  <section id="como-funciona" class="section wrap how">
-   <div class="eyebrow">{{site.howLabel}}</div><h2>{{site.howTitle}}</h2>
-   <div class="info">@for (i of site.info; track $index) {<article><span>{{$index+1}}</span><h3>{{i.title}}</h3><p>{{i.text}}</p></article>}</div>
-  </section>
+  
 
   <section class="hero wrap">
    <div class="copy">
@@ -43,6 +40,11 @@ const STORE_KEY = 'cart-v1';
     @if (heroSrc && heroOk) {<img [src]="heroSrc" [alt]="site.heroImageAlt" referrerpolicy="no-referrer" (error)="heroOk=false">}
     @else {<div class="visual-fallback" aria-hidden="true"><i></i><i></i><i></i></div>}
    </div>
+  </section>
+
+  <section id="como-funciona" class="section wrap how">
+   <div class="eyebrow">{{site.howLabel}}</div><h2>{{site.howTitle}}</h2>
+   <div class="info">@for (i of site.info; track $index) {<article><span>{{$index+1}}</span><h3>{{i.title}}</h3><p>{{i.text}}</p></article>}</div>
   </section>
 
   <section id="catalogo" class="section wrap">
@@ -268,7 +270,7 @@ export class AppComponent implements OnInit {
    this.showCaballero=this.products.some(p=>p.gender==='caballero');
    this.showDiscount=this.products.some(p=>p.discount>0);
    this.refresh();
-   //this.restore(); this.sync();
+   this.restore(); this.sync();
    this.status='ready';
   } catch (error: unknown) {
    console.error('Error cargando el catálogo',error);
