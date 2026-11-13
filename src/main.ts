@@ -268,7 +268,7 @@ export class AppComponent implements OnInit {
    this.showCaballero=this.products.some(p=>p.gender==='caballero');
    this.showDiscount=this.products.some(p=>p.discount>0);
    this.refresh();
-   this.restore(); this.sync();
+   //this.restore(); this.sync();
    this.status='ready';
   } catch (error: unknown) {
    console.error('Error cargando el catálogo',error);
