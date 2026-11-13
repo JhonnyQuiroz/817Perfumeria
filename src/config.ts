@@ -55,7 +55,7 @@ export const SITE = {
   heroImageAlt: 'Imagen principal del catálogo',
   stats: [
     { value: '100%', label: 'Productos originales' },
-    { value: '24 h', label: 'Respuesta por WhatsApp' },
+    //{ value: '24 h', label: 'Respuesta por WhatsApp' },
     { value: 'COP', label: 'Precios con IVA incluido' },
   ],
   catalogLabel: 'Catálogo',
