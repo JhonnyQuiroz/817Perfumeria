@@ -5,7 +5,7 @@ import { DEMO_CSV, Product, norm, parseCsv, sizeKey, toProducts } from './catalo
 import { decodeOrder, encodeOrder } from './order-code';
 
 interface CartLine { key: string; name: string; size: string; qty: number; }
-interface CartRow { line: CartLine; unit: number | null; }
+interface CartRow { line: CartLine; unit: number | null; regular: number | null; }
 interface Decoded { code: string; when: string; total: string; unpriced: boolean; items: { name: string; size: string; qty: number }[]; row: string; }
 const STORE_KEY = 'cart-v1';
 
@@ -13,7 +13,7 @@ const STORE_KEY = 'cart-v1';
  selector: 'app-root', standalone: true,
  template: `
  <header class="header wrap"><a class="logo" href="#">{{site.brand}}</a>
-  <nav><a href="#catalogo">Catálogo</a><a class="hide-sm" href="#como-funciona">Cómo funciona</a>
+  <nav><a class="hide-sm" href="#como-funciona">Cómo funciona</a><a href="#catalogo">Catálogo</a>
    <button type="button" class="cart-btn" (click)="openCart()">Pedido@if (count>0) {<b>{{count}}</b>}</button></nav></header>
  <main>
   @if (showDecoder) {<section id="decodificar" class="section wrap decoder">
@@ -27,6 +27,11 @@ const STORE_KEY = 'cart-v1';
     <button type="button" class="btn" (click)="copyRow(decRes.row)">{{copied?'Copiado ✓':'Copiar fila para Excel'}}</button>
    </div>}
   </section>}
+  <section id="como-funciona" class="section wrap how">
+   <div class="eyebrow">{{site.howLabel}}</div><h2>{{site.howTitle}}</h2>
+   <div class="info">@for (i of site.info; track $index) {<article><span>{{$index+1}}</span><h3>{{i.title}}</h3><p>{{i.text}}</p></article>}</div>
+  </section>
+
   <section class="hero wrap">
    <div class="copy">
     <div class="eyebrow">{{site.eyebrow}}</div>
@@ -43,23 +48,29 @@ const STORE_KEY = 'cart-v1';
   <section id="catalogo" class="section wrap">
    <div class="eyebrow">{{site.catalogLabel}}</div><h2>{{site.catalogTitle}}</h2>
    @if (demo) {<p class="demo-note">Modo demostración. Pega la URL de tu hoja publicada en <code>src/config.ts</code> para ver tus productos.</p>}
-   @if (status==='ready' && categories.length>2) {<div class="chips">@for (c of categories; track c) {<button type="button" class="chip" [class.on]="c===category" (click)="category=c">{{c}}</button>}</div>}
+   @if (status==='ready') {<div class="filters">
+    @if (categories.length>2) {<div class="chips">@for (c of categories; track c) {<button type="button" class="chip" [class.on]="c===category" (click)="setCategory(c)">{{c}}</button>}</div>}
+    <div class="chips row2">
+     @if (showDama) {<button type="button" class="chip" [class.on]="gender==='dama'" [attr.aria-pressed]="gender==='dama'" (click)="toggleGender('dama')">Dama</button>}
+     @if (showCaballero) {<button type="button" class="chip" [class.on]="gender==='caballero'" [attr.aria-pressed]="gender==='caballero'" (click)="toggleGender('caballero')">Caballero</button>}
+     @if (showDiscount) {<button type="button" class="chip" [class.on]="onlyDisc" [attr.aria-pressed]="onlyDisc" (click)="toggleDisc()">Descuento</button>}
+     <label class="sort-wrap"><span>Ordenar</span><select #sortSel (change)="setSort(sortSel.value)">
+      <option value="none" [selected]="sort==='none'">Relevancia</option>
+      <option value="asc" [selected]="sort==='asc'">Precio: menor a mayor</option>
+      <option value="desc" [selected]="sort==='desc'">Precio: mayor a menor</option></select></label>
+    </div>
+   </div>}
    @if (status==='loading') {<p class="state">Cargando catálogo…</p>}
    @if (status==='error') {<p class="state">No pudimos cargar el catálogo. Intenta de nuevo en un momento.</p>}
    @if (status==='ready') {<div class="grid">
-    @for (p of filtered; track $index) {<article class="product" [class.sold]="!p.available">
+    @for (p of shown; track $index) {<article class="product" [class.sold]="!p.available">
      <div class="thumb">@if (p.image) {<img [src]="p.image" [alt]="p.name" loading="lazy" referrerpolicy="no-referrer" (error)="p.image=''">} @else {<span>{{p.name.charAt(0)}}</span>}
-      @if (p.featured) {<b class="tag">Destacado</b>}@if (!p.available) {<b class="tag off">Agotado</b>}</div>
+      @if (p.discount>0 && p.available) {<b class="tag disc">Descuento {{pct(p.discount)}}</b>}@if (!p.available) {<b class="tag off">Agotado</b>}</div>
      <div class="pbody"><small>{{p.category}}</small><h3>{{p.name}}</h3><p>{{p.description}}</p>
       @if (sizesFor(p).length) {<div class="sizes" role="group" aria-label="Tamaño">@for (z of sizesFor(p); track z) {<button type="button" class="size" [class.on]="z===sizeOf(p)" [disabled]="!p.available" (click)="pick(p,z)">{{z}}</button>}</div>}
-      <div class="prow"><strong>{{priceLabel(p)}}</strong>@if (p.available) {<button type="button" class="btn" [class.done]="added===lineKey(p)" (click)="add(p)">{{added===lineKey(p)?'Agregado ✓':'Agregar'}}</button>}</div></div>
-    </article>} @empty {<p class="state">No hay productos en esta categoría.</p>}
+      <div class="prow"><span class="pr">@if (hasDisc(p)) {<s>{{regularLabel(p)}}</s>}<strong>{{priceLabel(p)}}</strong></span>@if (p.available) {<button type="button" class="btn" [class.done]="added===lineKey(p)" (click)="add(p)">{{added===lineKey(p)?'Agregado ✓':'Agregar'}}</button>}</div></div>
+    </article>} @empty {<p class="state">No hay productos con estos filtros. <button type="button" class="link-btn" (click)="clearFilters()">Limpiar filtros</button></p>}
    </div>}
-  </section>
-
-  <section id="como-funciona" class="section wrap">
-   <div class="eyebrow">{{site.howLabel}}</div><h2>{{site.howTitle}}</h2>
-   <div class="info">@for (i of site.info; track $index) {<article><span>{{$index+1}}</span><h3>{{i.title}}</h3><p>{{i.text}}</p></article>}</div>
   </section>
  </main>
  @if (count>0 && !cartOpen) {<button type="button" class="fab" (click)="openCart()">Ver pedido · {{count}}</button>}
@@ -68,7 +79,7 @@ const STORE_KEY = 'cart-v1';
   <div class="d-head"><h3>Tu pedido</h3><button type="button" class="x" (click)="closeCart()" aria-label="Cerrar">×</button></div>
   @if (!cartView.length) {<p class="state">Aún no has agregado productos.</p>}
   <ul class="lines">@for (v of cartView; track v.line.key) {<li>
-   <div class="l-info"><b>{{v.line.name}}</b>@if (v.line.size) {<small>{{v.line.size}}</small>}<span>{{v.unit!==null?fmt(v.unit):'Consultar'}}</span></div>
+   <div class="l-info"><b>{{v.line.name}}</b>@if (v.line.size) {<small>{{v.line.size}}</small>}<span>@if (v.regular!==null && v.unit!==null && v.regular!==v.unit) {<s>{{fmt(v.regular)}}</s>}{{v.unit!==null?fmt(v.unit):'Consultar'}}</span></div>
    <div class="qty"><button type="button" (click)="dec(v.line)" aria-label="Quitar una unidad">−</button><span>{{v.line.qty}}</span><button type="button" (click)="inc(v.line)" aria-label="Agregar una unidad">+</button></div>
   </li>}</ul>
   @if (cartView.length) {<div class="d-foot">
@@ -87,6 +98,11 @@ export class AppComponent implements OnInit {
  status: 'loading'|'ready'|'error'='loading';
  products: Product[]=[];
  category='Todos';
+ gender: ''|'dama'|'caballero'='';
+ onlyDisc=false;
+ sort: 'none'|'asc'|'desc'='none';
+ shown: Product[]=[];
+ showDama=false; showCaballero=false; showDiscount=false;
  demo=!CONFIG.sheetCsvUrl;
  canOrder=!!CONFIG.whatsapp;
  private wa=`https://wa.me/${CONFIG.whatsapp}`;
@@ -106,18 +122,58 @@ export class AppComponent implements OnInit {
  @HostListener('window:hashchange') onHash(): void { this.showDecoder=location.hash==='#decodificar'; }
 
  get categories(): string[] { return ['Todos', 'Inspirados', 'Replica 1.1', 'Original']; }
- get filtered(): Product[] { return this.category==='Todos'?this.products:this.products.filter(p=>p.category===this.category); }
 
  fmt(n: number): string { return this.money.format(n); }
+ pct(n: number): string { return new Intl.NumberFormat(CONFIG.locale,{maximumFractionDigits:1}).format(n)+'%'; }
+
+ // Filtros y orden
+ setCategory(c: string): void { this.category=c; this.refresh(); }
+ toggleGender(g: 'dama'|'caballero'): void { this.gender=this.gender===g?'':g; this.refresh(); }
+ toggleDisc(): void { this.onlyDisc=!this.onlyDisc; this.refresh(); }
+ setSort(v: string): void { this.sort=v==='asc'||v==='desc'?v:'none'; this.refresh(); }
+ clearFilters(): void { this.category='Todos'; this.gender=''; this.onlyDisc=false; this.refresh(); }
+ /** Aplica categoría, género, descuento y orden. Los de género "Unisex" salen en Dama y en Caballero. */
+ private refresh(): void {
+  let list=this.products.filter(p=>
+   (this.category==='Todos'||p.category===this.category)
+   &&(!this.gender||p.gender===this.gender||p.gender==='unisex')
+   &&(!this.onlyDisc||p.discount>0));
+  if (this.sort!=='none') {
+   const dir=this.sort==='asc'?1:-1;
+   list=[...list].sort((a,b)=>{
+    const pa=this.sortPrice(a), pb=this.sortPrice(b);
+    if (pa===null||pb===null) return pa===pb?0:pa===null?1:-1;   // sin precio: siempre al final
+    return (pa-pb)*dir;
+   });
+  }
+  this.shown=list;
+ }
+ /** Precio para ordenar: el más bajo del producto con su descuento (no cambia al elegir tamaño). */
+ private sortPrice(p: Product): number|null {
+  const sizes=this.sizesFor(p);
+  const prices=(sizes.length?sizes:['']).map(z=>this.unitPrice(p,z)).filter((n): n is number=>n!==null);
+  return prices.length?Math.min(...prices):null;
+ }
  sizesFor(p: Product): string[] {
   const hit=Object.entries(CONFIG.sizes).find(([cat])=>norm(cat)===norm(p.category));
   return hit?hit[1]:[];
  }
  sizeOf(p: Product): string { return this.sizeSel[p.name]??this.sizesFor(p)[0]??''; }
  pick(p: Product,size: string): void { this.sizeSel[p.name]=size; }
- unitPrice(p: Product,size: string): number|null {
+ /** Precio regular (sin descuento) para un tamaño. */
+ regularPrice(p: Product,size: string): number|null {
   const bySize=size?p.sizePrices[sizeKey(size)]:undefined;
   return bySize!==undefined?bySize:p.price;
+ }
+ /** Precio que paga el cliente: el regular menos el descuento, si lo tiene. */
+ unitPrice(p: Product,size: string): number|null {
+  const r=this.regularPrice(p,size);
+  return r!==null&&p.discount>0?Math.round(r*(1-p.discount/100)):r;
+ }
+ hasDisc(p: Product): boolean { return p.discount>0&&this.regularPrice(p,this.sizeOf(p))!==null; }
+ regularLabel(p: Product): string {
+  const r=this.regularPrice(p,this.sizeOf(p));
+  return r!==null?this.money.format(r):'';
  }
  priceLabel(p: Product): string {
   const n=this.unitPrice(p,this.sizeOf(p));
@@ -148,7 +204,7 @@ export class AppComponent implements OnInit {
  private sync(): void {
   this.cartView=this.cart.map(line=>{
    const p=this.products.find(x=>x.name===line.name);
-   return {line,unit:p?this.unitPrice(p,line.size):null};
+   return {line,unit:p?this.unitPrice(p,line.size):null,regular:p?this.regularPrice(p,line.size):null};
   });
   this.count=this.cart.reduce((n,l)=>n+l.qty,0);
   this.total=this.cartView.reduce((t,r)=>t+(r.unit!==null?r.unit*r.line.qty:0),0);
@@ -208,6 +264,10 @@ export class AppComponent implements OnInit {
     csv=await res.text();
    }
    this.products=toProducts(parseCsv(csv));
+   this.showDama=this.products.some(p=>p.gender==='dama');
+   this.showCaballero=this.products.some(p=>p.gender==='caballero');
+   this.showDiscount=this.products.some(p=>p.discount>0);
+   this.refresh();
    this.restore(); this.sync();
    this.status='ready';
   } catch (error: unknown) {

@@ -5,14 +5,19 @@ Catálogo estático: los productos y precios se leen desde un Google Sheet publi
 ## 1. Preparar el Google Sheet
 Primera fila (el orden de columnas no importa):
 
-| codigo | nombre | descripcion | precio | categoria | imagen | disponible | destacado |
-|---|---|---|---|---|---|---|---|
+| codigo | nombre | descripcion | precio | categoria | genero | descuento | imagen | disponible |
+|---|---|---|---|---|---|---|---|---|
 
 - `codigo`: **número único y fijo por producto (1 a 49999)**, ej. 101, 102, 103… Es lo que identifica el perfume dentro del código de pedido. Escríbelo una vez y no lo cambies ni lo reutilices. Si usas `=RANDBETWEEN(1000,49999)`, copia y pega el resultado **como valores** (si lo dejas como fórmula, cambia en cada recálculo y rompe el historial).
 - `precio`: número (25000 o 25.000). Si pones texto ("Consultar") se muestra tal cual.
 - `imagen`: URL pública o ruta del proyecto (ej. `/img/foto1.jpg`). Evita enlaces de Google Drive.
 - `precio_30ml`, `precio_60ml`, `precio_100ml` (opcionales): precio por tamaño para las categorías con selector de tamaño (hoy `Inspirados`, ver `sizes` en `src/config.ts`). Si un tamaño no tiene precio, se usa el de `precio`.
-- `disponible`: `no` marca el producto como agotado. `destacado`: `si` muestra la etiqueta.
+- `descuento` (opcional): **solo el número**, sin el símbolo %, ej. `18`. `precio` (y `precio_30ml`, etc.) es siempre el precio **regular**; la página calcula el precio con descuento, lo muestra junto al regular tachado y pone la etiqueta "Descuento 18%". El carrito, el total y el código de pedido usan el precio con descuento. Debe ser un número entre 1 y 99; si lo dejas vacío no hay descuento.
+- `genero` (opcional): `Dama`, `Caballero` o `Unisex`. Los botones **Dama** y **Caballero** aparecen cuando al menos un producto tiene ese género (los `Unisex` salen en ambos). El botón **Descuento** aparece cuando al menos un producto tiene descuento.
+- `disponible`: `no` marca el producto como agotado.
+- La columna `destacado` ya no se usa: la etiqueta de la tarjeta ahora muestra el descuento.
+
+**Orden por precio:** el selector "Ordenar" usa el precio más bajo de cada producto (con su descuento aplicado, y el del tamaño más pequeño si tiene tamaños). Los productos sin precio ("Consultar") quedan siempre al final.
 - **Usa una hoja solo con lo que quieras mostrar**: al publicarla, cualquiera con la URL puede verla.
 
 Publicar: Archivo → Compartir → Publicar en la web → elige la pestaña → formato **CSV** → Publicar. Copia la URL.

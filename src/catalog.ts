@@ -1,5 +1,7 @@
 import { productId } from './order-code';
 
+export type Gender = 'dama' | 'caballero' | 'unisex' | '';
+
 export interface Product {
   name: string;
   description: string;
@@ -15,10 +17,14 @@ export interface Product {
   code: string;
   /** Id numérico de 16 bits usado dentro del código de pedido. */
   pid: number;
+  /** Porcentaje de descuento (0 = sin descuento). Viene de la columna `descuento`, ej. 18. */
+  discount: number;
+  /** Para quién es el perfume, de la columna `genero` (Dama / Caballero / Unisex). */
+  gender: Gender;
 }
 
 // Columnas de la hoja (el orden no importa, se detectan por el nombre del encabezado)
-const ALIASES: Record<'name' | 'description' | 'price' | 'category' | 'image' | 'available' | 'featured' | 'code', string[]> = {
+const ALIASES: Record<'name' | 'description' | 'price' | 'category' | 'image' | 'available' | 'featured' | 'code' | 'discount' | 'gender', string[]> = {
   name: ['nombre', 'producto', 'name'],
   description: ['descripcion', 'detalle', 'description'],
   price: ['precio', 'valor', 'price'],
@@ -27,13 +33,15 @@ const ALIASES: Record<'name' | 'description' | 'price' | 'category' | 'image' | 
   available: ['disponible', 'stock', 'available'],
   featured: ['destacado', 'featured'],
   code: ['codigo', 'code', 'sku', 'ref', 'referencia'],
+  discount: ['descuento', 'dcto', 'discount'],
+  gender: ['genero', 'sexo', 'gender'],
 };
 
-export const DEMO_CSV = `codigo,nombre,descripcion,precio,categoria,imagen,disponible,destacado,precio_30ml,precio_60ml,precio_100ml
-101,Producto de ejemplo 1,"Descripción corta del producto, con coma incluida",,Inspirados,,si,si,35000,60000,85000
-102,Producto de ejemplo 2,Otra descripción de ejemplo,,Inspirados,,si,no,32000,55000,80000
-103,Producto de ejemplo 3,Este producto está agotado,129000,Original,,no,no,,,
-104,Producto de ejemplo 4,Precio a convenir,Consultar,Original,,si,no,,,`;
+export const DEMO_CSV = `codigo,nombre,descripcion,precio,categoria,imagen,disponible,destacado,precio_30ml,precio_60ml,precio_100ml,descuento,genero
+101,Producto de ejemplo 1,"Descripción corta del producto, con coma incluida",,Inspirados,,si,si,35000,60000,85000,18,Dama
+102,Producto de ejemplo 2,Otra descripción de ejemplo,,Inspirados,,si,no,32000,55000,80000,,Caballero
+103,Producto de ejemplo 3,Este producto está agotado,129000,Original,,no,no,,,,10,Dama
+104,Producto de ejemplo 4,Precio a convenir,Consultar,Original,,si,no,,,,,Unisex`;
 
 /** Clave de tamaño: "30 ml", "30ML" y "30ml" son lo mismo. */
 export const sizeKey = (s: string): string => s.replace(/\s+/g, '').toLowerCase();
@@ -81,6 +89,21 @@ export function parsePrice(raw: string): number | null {
   return isNaN(n) ? null : n;
 }
 
+/** "18", "18%" o "18,5" -> 18 / 18 / 18.5. Solo vale entre 0 y 100 (sin incluir). */
+export function parseDiscount(raw: string): number {
+  const n = parsePrice(raw);
+  return n !== null && n > 0 && n < 100 ? n : 0;
+}
+
+export function parseGender(raw: string): Gender {
+  const g = norm(raw);
+  if (!g) return '';
+  if (g.includes('unisex') || g.includes('ambos')) return 'unisex';
+  if (/dama|mujer|femenin/.test(g)) return 'dama';
+  if (/caballero|hombre|masculin/.test(g)) return 'caballero';
+  return '';
+}
+
 export function toProducts(rows: string[][]): Product[] {
   if (rows.length < 2) return [];
   const header = rows[0].map(norm);
@@ -96,6 +119,7 @@ export function toProducts(rows: string[][]): Product[] {
     name: col('name'), description: col('description'), price: col('price'),
     category: col('category'), image: col('image'),
     available: col('available'), featured: col('featured'), code: col('code'),
+    discount: col('discount'), gender: col('gender'),
   };
   const get = (r: string[], i: number): string => (i >= 0 ? (r[i] ?? '').trim() : '');
 
@@ -106,23 +130,34 @@ export function toProducts(rows: string[][]): Product[] {
     const avail = norm(get(r, idx.available));
     const feat = norm(get(r, idx.featured));
     const code = get(r, idx.code);
+    const sizePrices = Object.fromEntries(
+      sizeCols.flatMap(([k, i]): [string, number][] => {
+        const n = parsePrice(get(r, i));
+        return n === null ? [] : [[k, n]];
+      }),
+    );
+    const price = parsePrice(priceText);
+    const discRaw = get(r, idx.discount);
+    const genRaw = get(r, idx.gender);
+    const gender = parseGender(genRaw);
+    // El descuento solo tiene sentido si el producto tiene algún precio
+    const discount = price !== null || Object.keys(sizePrices).length ? parseDiscount(discRaw) : 0;
+    if (discRaw && discRaw !== '0' && !parseDiscount(discRaw)) console.warn(`[catálogo] "${name}": descuento "${discRaw}" no válido (usa un número entre 1 y 99, ej. 18).`);
+    if (genRaw && !gender) console.warn(`[catálogo] "${name}": género "${genRaw}" no reconocido (usa Dama, Caballero o Unisex).`);
     return [{
       name,
       code,
       pid: productId(code, name),
       description: get(r, idx.description),
-      price: parsePrice(priceText),
+      price,
       priceText,
       category: get(r, idx.category) || 'General',
       image: get(r, idx.image),
       available: !['no', 'false', '0', 'agotado', 'n'].includes(avail),
       featured: ['si', 'yes', 'true', '1', 'x', 's'].includes(feat),
-      sizePrices: Object.fromEntries(
-        sizeCols.flatMap(([k, i]): [string, number][] => {
-          const n = parsePrice(get(r, i));
-          return n === null ? [] : [[k, n]];
-        }),
-      ),
+      sizePrices,
+      discount,
+      gender,
     }];
   });
   // Avisos para el dueño del catálogo (aparecen en la consola del navegador)
