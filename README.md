@@ -5,13 +5,23 @@ Catálogo estático: los productos y precios se leen desde un Google Sheet publi
 ## 1. Preparar el Google Sheet
 Primera fila (el orden de columnas no importa):
 
-| codigo | nombre | descripcion | precio | categoria | genero | descuento | imagen | disponible |
-|---|---|---|---|---|---|---|---|---|
+| codigo | nombre | descripcion | precio | categoria | genero | descuento | imagen | disponible | tamanos |
+|---|---|---|---|---|---|---|---|---|---|
 
 - `codigo`: **número único y fijo por producto (1 a 49999)**, ej. 101, 102, 103… Es lo que identifica el perfume dentro del código de pedido. Escríbelo una vez y no lo cambies ni lo reutilices. Si usas `=RANDBETWEEN(1000,49999)`, copia y pega el resultado **como valores** (si lo dejas como fórmula, cambia en cada recálculo y rompe el historial).
 - `precio`: número (25000 o 25.000). Si pones texto ("Consultar") se muestra tal cual.
 - `imagen`: URL pública o ruta del proyecto (ej. `/img/foto1.jpg`). Evita enlaces de Google Drive.
-- `precio_30ml`, `precio_60ml`, `precio_100ml` (opcionales): precio por tamaño para las categorías con selector de tamaño (hoy `Inspirados`, ver `sizes` en `src/config.ts`). Si un tamaño no tiene precio, se usa el de `precio`.
+- `tamanos` (opcional): tamaños disponibles para ese producto, separados por punto y coma, por ejemplo `30 ml; 60 ml; 100 ml`. Déjalo vacío si el producto no tiene opciones de tamaño. Para productos de categoría `Original` y `Replica 1.1`, esta columna permite configurar tamaños distintos en cada fila.
+- `precio_30ml`, `precio_60ml`, `precio_100ml` (opcionales): precio regular para cada tamaño. Agrega más columnas con el formato `precio_Nml` si necesitas otros tamaños (por ejemplo, `precio_50ml`). Si la celda del tamaño está vacía, se usa `precio`. En `Inspirados` se conserva el selector configurado en `src/config.ts`; en otras categorías también se detectan tamaños de columnas `precio_Nml` con precio.
+
+Ejemplo para tamaños y precios independientes por producto:
+
+| categoria | tamanos | precio_30ml | precio_50ml | precio_60ml |
+|---|---|---:|---:|---:|
+| Original | 30 ml; 50 ml | 120000 | 175000 | |
+| Replica 1.1 | 30 ml; 60 ml | 45000 | | 68000 |
+
+En este ejemplo, cada fila ofrece únicamente los tamaños escritos en `tamanos`; el precio se toma de la columna correspondiente. Puedes dejar vacías las columnas de tamaños que ese perfume no ofrece.
 - `descuento` (opcional): **solo el número**, sin el símbolo %, ej. `18`. `precio` (y `precio_30ml`, etc.) es siempre el precio **regular**; la página calcula el precio con descuento, lo muestra junto al regular tachado y pone la etiqueta "Descuento 18%". El carrito, el total y el código de pedido usan el precio con descuento. Debe ser un número entre 1 y 99; si lo dejas vacío no hay descuento.
 - `genero` (opcional): `Dama`, `Caballero` o `Unisex`. Los botones **Dama** y **Caballero** aparecen cuando al menos un producto tiene ese género (los `Unisex` salen en ambos). El botón **Descuento** aparece cuando al menos un producto tiene descuento.
 - `disponible`: `no` marca el producto como agotado.
@@ -19,6 +29,8 @@ Primera fila (el orden de columnas no importa):
 
 **Orden por precio:** el selector "Ordenar" usa el precio más bajo de cada producto (con su descuento aplicado, y el del tamaño más pequeño si tiene tamaños). Los productos sin precio ("Consultar") quedan siempre al final.
 - **Usa una hoja solo con lo que quieras mostrar**: al publicarla, cualquiera con la URL puede verla.
+
+Al tocar una tarjeta se abre el detalle para ver la imagen, descripción, disponibilidad, precio y elegir tamaño. Para productos `Original` o `Replica 1.1` con varios tamaños, **Agregar** también abre ese detalle para elegir la presentación antes de añadirla al pedido. El carrito muestra la imagen de cada producto.
 
 Publicar: Archivo → Compartir → Publicar en la web → elige la pestaña → formato **CSV** → Publicar. Copia la URL.
 

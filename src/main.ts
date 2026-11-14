@@ -5,7 +5,7 @@ import { DEMO_CSV, Product, norm, parseCsv, sizeKey, toProducts } from './catalo
 import { decodeOrder, encodeOrder } from './order-code';
 
 interface CartLine { key: string; name: string; size: string; qty: number; }
-interface CartRow { line: CartLine; unit: number | null; regular: number | null; }
+interface CartRow { line: CartLine; unit: number | null; regular: number | null; image: string; }
 interface Decoded { code: string; when: string; total: string; unpriced: boolean; items: { name: string; size: string; qty: number }[]; row: string; }
 const STORE_KEY = 'cart-v1';
 
@@ -65,25 +65,43 @@ const STORE_KEY = 'cart-v1';
    @if (status==='loading') {<p class="state">Cargando catálogo…</p>}
    @if (status==='error') {<p class="state">No pudimos cargar el catálogo. Intenta de nuevo en un momento.</p>}
    @if (status==='ready') {<div class="grid">
-    @for (p of shown; track $index) {<article class="product" [class.sold]="!p.available">
+    @for (p of shown; track $index) {<article class="product" [class.sold]="!p.available" [attr.aria-label]="'Ver detalles de '+p.name" tabindex="0" (click)="openProduct(p)" (keydown.enter)="openProductFromKey(p,$event)" (keydown.space)="openProductFromKey(p,$event)">
      <div class="thumb">@if (p.image) {<img [src]="p.image" [alt]="p.name" loading="lazy" referrerpolicy="no-referrer" (error)="p.image=''">} @else {<span>{{p.name.charAt(0)}}</span>}
       @if (p.discount>0 && p.available) {<b class="tag disc">Descuento {{pct(p.discount)}}</b>}@if (!p.available) {<b class="tag off">Agotado</b>}</div>
      <div class="pbody"><small>{{p.category}}</small><h3>{{p.name}}</h3><p>{{p.description}}</p>
-      @if (sizesFor(p).length) {<div class="sizes" role="group" aria-label="Tamaño">@for (z of sizesFor(p); track z) {<button type="button" class="size" [class.on]="z===sizeOf(p)" [disabled]="!p.available" (click)="pick(p,z)">{{z}}</button>}</div>}
-      <div class="prow"><span class="pr">@if (hasDisc(p)) {<s>{{regularLabel(p)}}</s>}<strong>{{priceLabel(p)}}</strong></span>@if (p.available) {<button type="button" class="btn" [class.done]="added===lineKey(p)" (click)="add(p)">{{added===lineKey(p)?'Agregado ✓':'Agregar'}}</button>}</div></div>
+      @if (sizesFor(p).length) {<div class="sizes" role="group" aria-label="Tamaño">@for (z of sizesFor(p); track z) {<button type="button" class="size" [class.on]="z===sizeOf(p)" [attr.aria-pressed]="z===sizeOf(p)" [disabled]="!p.available" (click)="$event.stopPropagation(); pick(p,z)">{{z}}</button>}</div>}
+      <div class="prow"><span class="pr">@if (hasDisc(p)) {<s>{{regularLabel(p)}}</s>}<strong>{{priceLabel(p)}}</strong></span>@if (p.available) {<button type="button" class="btn" [class.done]="added===lineKey(p)" (click)="$event.stopPropagation(); addFromCard(p)">{{added===lineKey(p)?'Agregado ✓':'Agregar'}}</button>}</div></div>
     </article>} @empty {<p class="state">No hay productos con estos filtros. <button type="button" class="link-btn" (click)="clearFilters()">Limpiar filtros</button></p>}
    </div>}
   </section>
  </main>
  @if (count>0 && !cartOpen) {<button type="button" class="fab" (click)="openCart()">Ver pedido · {{count}}</button>}
- @if (canOrder) {<a class="whatsapp-fab" [href]="whatsappLink" target="_blank" rel="noopener noreferrer" aria-label="Abrir WhatsApp">
+ @if (canOrder) {<a class="whatsapp-fab" [class.with-cart]="count>0 && !cartOpen" [href]="whatsappLink" target="_blank" rel="noopener noreferrer" aria-label="Abrir WhatsApp">
   <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 3.2a12.8 12.8 0 0 0-11 19.3L3.3 28.7l6.4-1.7A12.8 12.8 0 1 0 16 3.2Z" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M11.2 9.5c-.5 0-1 .2-1.4.7-.5.5-1.3 1.3-1.3 3.1s1.3 3.6 1.5 3.8c.2.3 2.5 4 6.2 5.4 3.1 1.2 3.7 1 4.4.9.7-.1 2.2-.9 2.5-1.8.3-.9.3-1.7.2-1.8-.1-.2-.5-.3-1-.6-.5-.2-2.2-1.1-2.6-1.2-.3-.1-.6-.2-.8.2-.2.5-.9 1.2-1.1 1.5-.2.3-.4.3-.8.1-.5-.2-1.7-.6-3.2-2-1.2-1-2-2.3-2.2-2.7-.2-.4 0-.6.2-.8.2-.2.5-.6.7-.8.2-.3.2-.5.4-.8.1-.3 0-.6 0-.8-.1-.2-.8-1.9-1.1-2.6-.3-.7-.6-.6-.8-.6h-.7Z" fill="currentColor"/></svg>
  </a>}
+ @if (detailProduct; as p) {<div class="product-overlay" (click)="closeProduct()"></div>
+ <section class="product-dialog" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+  <button type="button" class="x detail-close" (click)="closeProduct()" aria-label="Cerrar">×</button>
+  <div class="detail-layout">
+   <div class="detail-thumb">@if (p.image && detailImageOk) {<img [src]="p.image" [alt]="p.name" referrerpolicy="no-referrer" (error)="detailImageOk=false">} @else {<span>{{p.name.charAt(0)}}</span>}
+    @if (p.discount>0 && p.available) {<b class="tag disc">Descuento {{pct(p.discount)}}</b>}@if (!p.available) {<b class="tag off">Agotado</b>}
+   </div>
+   <div class="detail-body">
+    <small>{{p.category}}</small><h2 id="detail-title">{{p.name}}</h2>
+    @if (p.description) {<p class="detail-description">{{p.description}}</p>}
+    <p class="detail-meta">@if (p.gender) {<span>{{genderLabel(p.gender)}}</span>}<span>{{p.available?'Disponible':'Agotado'}}</span></p>
+    @if (sizesFor(p).length) {<div class="detail-sizes"><b>Tamaño</b><div class="sizes" role="group" aria-label="Tamaño">@for (z of sizesFor(p); track z) {<button type="button" class="size" [class.on]="z===detailSize" [attr.aria-pressed]="z===detailSize" (click)="detailSize=z">{{z}}</button>}</div></div>}
+    <div class="detail-price"><span class="pr">@if (hasDisc(p,detailSize)) {<s>{{regularLabel(p,detailSize)}}</s>}<strong>{{priceLabel(p,detailSize)}}</strong></span></div>
+    <button type="button" class="btn solid detail-add" [disabled]="!p.available" (click)="addFromDetail()">{{p.available?'Agregar al pedido':'Agotado'}}</button>
+   </div>
+  </div>
+ </section>}
  @if (cartOpen) {<div class="overlay" (click)="closeCart()"></div>
  <aside class="drawer" role="dialog" aria-modal="true" aria-label="Tu pedido">
   <div class="d-head"><h3>Tu pedido</h3><button type="button" class="x" (click)="closeCart()" aria-label="Cerrar">×</button></div>
   @if (!cartView.length) {<p class="state">Aún no has agregado productos.</p>}
   <ul class="lines">@for (v of cartView; track v.line.key) {<li>
+   <div class="cart-thumb">@if (v.image) {<img [src]="v.image" [alt]="v.line.name" loading="lazy" referrerpolicy="no-referrer" (error)="v.image=''">} @else {<span>{{v.line.name.charAt(0)}}</span>}</div>
    <div class="l-info"><b>{{v.line.name}}</b>@if (v.line.size) {<small>{{v.line.size}}</small>}<span>@if (v.regular!==null && v.unit!==null && v.regular!==v.unit) {<s>{{fmt(v.regular)}}</s>}{{v.unit!==null?fmt(v.unit):'Consultar'}}</span></div>
    <div class="qty"><button type="button" (click)="dec(v.line)" aria-label="Quitar una unidad">−</button><span>{{v.line.qty}}</span><button type="button" (click)="inc(v.line)" aria-label="Agregar una unidad">+</button></div>
   </li>}</ul>
@@ -121,6 +139,9 @@ export class AppComponent implements OnInit {
  cartOpen=false;
  added='';
  private sizeSel: Record<string,string>={};
+ detailProduct: Product|null=null;
+ detailSize='';
+ detailImageOk=true;
 
  // Herramienta interna: abre  tu-sitio/#decodificar
  showDecoder=location.hash==='#decodificar';
@@ -161,11 +182,41 @@ export class AppComponent implements OnInit {
   return prices.length?Math.min(...prices):null;
  }
  sizesFor(p: Product): string[] {
+  if (p.sizeOptions.length) return p.sizeOptions;
   const hit=Object.entries(CONFIG.sizes).find(([cat])=>norm(cat)===norm(p.category));
-  return hit?hit[1]:[];
+  return hit?hit[1]:Object.keys(p.sizePrices).sort((a,b)=>parseInt(a,10)-parseInt(b,10)).map(s=>s.replace(/(\d+)ml/i,'$1 ml'));
  }
  sizeOf(p: Product): string { return this.sizeSel[p.name]??this.sizesFor(p)[0]??''; }
  pick(p: Product,size: string): void { this.sizeSel[p.name]=size; }
+ openProduct(p: Product): void {
+  this.detailProduct=p; this.detailSize=this.sizeOf(p); this.detailImageOk=true;
+  document.body.style.overflow='hidden';
+ }
+ openProductFromKey(p: Product,event: KeyboardEvent): void {
+  if (event.target!==event.currentTarget) return;
+  event.preventDefault();
+  this.openProduct(p);
+ }
+ closeProduct(): void {
+  this.detailProduct=null;
+  document.body.style.overflow=this.cartOpen?'hidden':'';
+ }
+ requiresSizeChoice(p: Product): boolean {
+  const category=norm(p.category);
+  return (category==='original'||category==='replica 1.1')&&this.sizesFor(p).length>1;
+ }
+ addFromCard(p: Product): void {
+  if (this.requiresSizeChoice(p)) { this.openProduct(p); return; }
+  this.add(p);
+ }
+ addFromDetail(): void {
+  if (!this.detailProduct) return;
+  this.add(this.detailProduct,this.detailSize);
+  this.closeProduct();
+ }
+ genderLabel(gender: Product['gender']): string {
+  return gender==='dama'?'Dama':gender==='caballero'?'Caballero':gender==='unisex'?'Unisex':'';
+ }
  /** Precio regular (sin descuento) para un tamaño. */
  regularPrice(p: Product,size: string): number|null {
   const bySize=size?p.sizePrices[sizeKey(size)]:undefined;
@@ -176,20 +227,20 @@ export class AppComponent implements OnInit {
   const r=this.regularPrice(p,size);
   return r!==null&&p.discount>0?Math.round(r*(1-p.discount/100)):r;
  }
- hasDisc(p: Product): boolean { return p.discount>0&&this.regularPrice(p,this.sizeOf(p))!==null; }
- regularLabel(p: Product): string {
-  const r=this.regularPrice(p,this.sizeOf(p));
+ hasDisc(p: Product,size=this.sizeOf(p)): boolean { return p.discount>0&&this.regularPrice(p,size)!==null; }
+ regularLabel(p: Product,size=this.sizeOf(p)): string {
+  const r=this.regularPrice(p,size);
   return r!==null?this.money.format(r):'';
  }
- priceLabel(p: Product): string {
-  const n=this.unitPrice(p,this.sizeOf(p));
+ priceLabel(p: Product,size=this.sizeOf(p)): string {
+  const n=this.unitPrice(p,size);
   return n!==null?this.money.format(n):(p.priceText||'Consultar');
  }
  lineKey(p: Product): string { return p.name+'|'+this.sizeOf(p); }
 
  // Acciones del carrito
- add(p: Product): void {
-  const size=this.sizeOf(p), key=p.name+'|'+size;
+ add(p: Product,size=this.sizeOf(p)): void {
+  const key=p.name+'|'+size;
   const line=this.cart.find(l=>l.key===key);
   if (line) { line.qty++; } else { this.cart.push({key,name:p.name,size,qty:1}); }
   this.added=key; setTimeout(()=>{ if (this.added===key) this.added=''; },1200);
@@ -202,15 +253,18 @@ export class AppComponent implements OnInit {
   this.sync();
  }
  clear(): void { this.cart=[]; this.sync(); }
- openCart(): void { this.cartOpen=true; document.body.style.overflow='hidden'; }
- closeCart(): void { this.cartOpen=false; document.body.style.overflow=''; }
- @HostListener('document:keydown.escape') onEsc(): void { if (this.cartOpen) this.closeCart(); }
+ openCart(): void { this.closeProduct(); this.cartOpen=true; document.body.style.overflow='hidden'; }
+ closeCart(): void { this.cartOpen=false; document.body.style.overflow=this.detailProduct?'hidden':''; }
+ @HostListener('document:keydown.escape') onEsc(): void {
+  if (this.cartOpen) this.closeCart();
+  else if (this.detailProduct) this.closeProduct();
+ }
 
  /** Recalcula totales y el mensaje de WhatsApp, y guarda el carrito. */
  private sync(): void {
   this.cartView=this.cart.map(line=>{
    const p=this.products.find(x=>x.name===line.name);
-   return {line,unit:p?this.unitPrice(p,line.size):null,regular:p?this.regularPrice(p,line.size):null};
+   return {line,unit:p?this.unitPrice(p,line.size):null,regular:p?this.regularPrice(p,line.size):null,image:p?.image??''};
   });
   this.count=this.cart.reduce((n,l)=>n+l.qty,0);
   this.total=this.cartView.reduce((t,r)=>t+(r.unit!==null?r.unit*r.line.qty:0),0);

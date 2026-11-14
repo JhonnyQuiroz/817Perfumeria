@@ -13,6 +13,8 @@ export interface Product {
   featured: boolean;
   /** Precios por tamaño, desde columnas opcionales como precio_30ml, precio_60ml... */
   sizePrices: Record<string, number>;
+  /** Tamaños opcionales definidos en la fila de la hoja, separados por punto y coma. */
+  sizeOptions: string[];
   /** Valor de la columna `codigo` del Sheet (identificador estable del producto). */
   code: string;
   /** Id numérico de 16 bits usado dentro del código de pedido. */
@@ -24,7 +26,7 @@ export interface Product {
 }
 
 // Columnas de la hoja (el orden no importa, se detectan por el nombre del encabezado)
-const ALIASES: Record<'name' | 'description' | 'price' | 'category' | 'image' | 'available' | 'featured' | 'code' | 'discount' | 'gender', string[]> = {
+const ALIASES: Record<'name' | 'description' | 'price' | 'category' | 'image' | 'available' | 'featured' | 'code' | 'discount' | 'gender' | 'sizes', string[]> = {
   name: ['nombre', 'producto', 'name'],
   description: ['descripcion', 'detalle', 'description'],
   price: ['precio', 'valor', 'price'],
@@ -35,6 +37,7 @@ const ALIASES: Record<'name' | 'description' | 'price' | 'category' | 'image' | 
   code: ['codigo', 'code', 'sku', 'ref', 'referencia'],
   discount: ['descuento', 'dcto', 'discount'],
   gender: ['genero', 'sexo', 'gender'],
+  sizes: ['tamanos', 'sizes'],
 };
 
 export const DEMO_CSV = `codigo,nombre,descripcion,precio,categoria,imagen,disponible,destacado,precio_30ml,precio_60ml,precio_100ml,descuento,genero
@@ -119,7 +122,7 @@ export function toProducts(rows: string[][]): Product[] {
     name: col('name'), description: col('description'), price: col('price'),
     category: col('category'), image: col('image'),
     available: col('available'), featured: col('featured'), code: col('code'),
-    discount: col('discount'), gender: col('gender'),
+    discount: col('discount'), gender: col('gender'), sizes: col('sizes'),
   };
   const get = (r: string[], i: number): string => (i >= 0 ? (r[i] ?? '').trim() : '');
 
@@ -127,6 +130,7 @@ export function toProducts(rows: string[][]): Product[] {
     const name = get(r, idx.name);
     if (!name) return [];
     const priceText = get(r, idx.price);
+    const sizeOptions = get(r, idx.sizes).split(/[;|]/).map(s => s.trim()).filter(Boolean);
     const avail = norm(get(r, idx.available));
     const feat = norm(get(r, idx.featured));
     const code = get(r, idx.code);
@@ -156,6 +160,7 @@ export function toProducts(rows: string[][]): Product[] {
       available: !['no', 'false', '0', 'agotado', 'n'].includes(avail),
       featured: ['si', 'yes', 'true', '1', 'x', 's'].includes(feat),
       sizePrices,
+      sizeOptions,
       discount,
       gender,
     }];
