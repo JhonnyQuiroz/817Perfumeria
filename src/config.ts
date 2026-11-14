@@ -64,7 +64,7 @@ export const SITE = {
   //https://media.wonderlandmagazine.com/uploads/2025/06/241104_RW_020_0911_04_RVB-scaled.jpeg
   //https://www.sinabrochar.com/wp-content/uploads/2016/12/Sauvage.jpg
   //https://hips.hearstapps.com/hmg-prod/images/4966c149-042f-41a3-b7b9-f9f4d086a488.png
-  heroImageMobile: 'https://http2.mlstatic.com/D_NQ_NP_703986-MLA89509260516_082025-O.webp', //relación de aspecto 9:16 (1080 × 1920 px).
+  heroImageMobile: 'https://www.perfumeriascoqueteo.com/img/cms/HUGO%20BOSS/DEFINITIVOS/hugo-boss-boss-bottled-elixir-edp.jpg', //relación de aspecto 9:16 (1080 × 1920 px).
   //https://lmd.com.co/cdn/shop/files/boss_bottled_beyond_edp_100ml_original.webp?v=1758412882&width=416
   heroImageAlt: 'Imagen principal del catálogo',
   stats: [
