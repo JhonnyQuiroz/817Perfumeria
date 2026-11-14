@@ -61,8 +61,7 @@ export const SITE = {
   // Imágenes del hero: acepta una URL pública o una ruta de public/ (ej. '/img/hero-desktop.webp').
   // La imagen móvil es opcional; si queda vacía se reutiliza la imagen de escritorio.
   heroImageDesktop: 'https://static.dafiti.com.co/cms/2026/Mayo/Desk/BF-26-logo-black.png', // relación de aspecto 2.4:1 (2400 × 1000 px)
-  //https://what-son.com/cms/media/eventos/evento-1295.jpg
-  heroImageMobile: 'https://static.dafiti.com.co/cms/2026/Mayo/Desk/BF-26-logo-black.png', //relación de aspecto 9:16 (1080 × 1920 px).
+  heroImageMobile: 'https://what-son.com/cms/media/eventos/evento-1295.jpg', //relación de aspecto 9:16 (1080 × 1920 px).
   heroImageAlt: 'Imagen principal del catálogo',
   stats: [
     { value: '100%', label: 'Productos originales' },
