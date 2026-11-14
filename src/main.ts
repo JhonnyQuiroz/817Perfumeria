@@ -275,7 +275,11 @@ export class AppComponent implements OnInit {
  }
  openProduct(p: Product): void {
   this.detailProduct=p;
-  this.detailSize=this.isInspired(p)?this.sizeOf(p):(this.sizeSel[p.name]??'');
+  const sizes=this.sizesFor(p),savedSize=this.sizeSel[p.name];
+  if (this.isInspired(p)) this.detailSize=this.sizeOf(p);
+  else if (savedSize&&sizes.includes(savedSize)) this.detailSize=savedSize;
+  else this.detailSize=sizes.length===1?sizes[0]:'';
+  if (this.detailSize) this.sizeSel[p.name]=this.detailSize;
   this.detailImageOk=true; this.searchActive=false;
   document.body.style.overflow='hidden';
  }
