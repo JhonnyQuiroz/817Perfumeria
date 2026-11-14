@@ -54,7 +54,7 @@ export const SITE = {
   heroText: 'Una selección cuidada de productos originales. Explora el catálogo, elige y pide directamente por WhatsApp.',
   // Imagen del hero: pega aquí el ENLACE de la imagen (debe empezar por https://).
   // Déjalo '' para usar el fondo decorativo. Ejemplo: 'https://res.cloudinary.com/tu-cuenta/image/upload/hero.jpg'
-  heroImage: 'https://deperfumes.co/wp-content/uploads/2024/11/Black-Red-Minimalist-Black-Friday-Sale-Instagram-Post-773-x-503-px.jpg',
+  heroImage: 'https://what-son.com/cms/media/eventos/evento-1295.jpg',
   heroImageAlt: 'Imagen principal del catálogo',
   stats: [
     { value: '100%', label: 'Productos originales' },
