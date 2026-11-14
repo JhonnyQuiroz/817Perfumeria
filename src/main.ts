@@ -232,11 +232,14 @@ export class AppComponent implements OnInit {
  selectSearchResult(p: Product): void { this.openProduct(p); }
  scrollToTop(event: Event): void {
   event.preventDefault(); this.searchActive=false;
-  window.scrollTo({top:0,behavior:'smooth'});
+  window.scrollTo({top:0,behavior:this.scrollBehavior()});
  }
  scrollToFilters(): void {
   this.searchActive=false;
-  document.getElementById('catalog-filters')?.scrollIntoView({behavior:'smooth',block:'start'});
+  document.getElementById('catalog-filters')?.scrollIntoView({behavior:this.scrollBehavior(),block:'start'});
+ }
+ private scrollBehavior(): ScrollBehavior {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth';
  }
  /** Aplica categoría, género, descuento y orden. Los de género "Unisex" salen en Dama y en Caballero. */
  private refresh(): void {
