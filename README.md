@@ -37,7 +37,7 @@ En las categorías distintas de `Inspirados`, la tarjeta muestra los tamaños di
 Publicar: Archivo → Compartir → Publicar en la web → elige la pestaña → formato **CSV** → Publicar. Copia la URL.
 
 ## 2. Configurar
-Edita `src/config.ts`: pega la URL en `sheetCsvUrl` y pon tu número en `whatsapp`.
+Edita `src/config.ts`: pega la URL en `sheetCsvUrl` y pon tu número en `whatsapp`. En `SITE.socials`, agrega las URLs públicas de Instagram, Facebook y TikTok en `instagram`, `facebook` y `tiktok`; los iconos solo aparecerán cuando el campo correspondiente tenga una URL.
 
 ## Pedidos por WhatsApp
 Cada producto se agrega a un pedido (botón **Agregar**) y el cliente lo envía por WhatsApp. El mensaje junta los productos con " - " y muestra la cantidad solo si es mayor a 1:

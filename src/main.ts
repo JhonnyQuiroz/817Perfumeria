@@ -146,10 +146,46 @@ function editDistance(a: string,b: string): number {
    <button type="button" class="link-btn" (click)="clear()">Vaciar pedido</button>
   </div>}
  </aside>}
- <footer class="footer wrap"><span>© 2026 {{site.brand}}</span><span>{{site.footerNote}}</span></footer>`
+ <footer class="site-footer">
+  <div class="footer-main wrap">
+   <section class="footer-cta">
+    <div><span class="footer-kicker">{{site.brand}} · {{site.eyebrow}}</span><h2>Tu próxima fragancia te espera.</h2><p>Explora el catálogo y encuentra tu próximo aroma.</p></div>
+    <a class="footer-cta-button" href="#catalogo">Ver catálogo <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></a>
+   </section>
+   <div class="footer-grid" [class.with-social]="!!(site.socials.instagram || site.socials.facebook || site.socials.tiktok)">
+    <section class="footer-brand">
+     <a class="footer-logo" href="#page-top" (click)="scrollToTop($event)">
+      @if (site.logoImage) {<img [src]="site.logoImage" [alt]="site.logoImageAlt" (error)="site.logoImage=''">}
+      <span>{{site.brand}}</span>
+     </a>
+     <p>{{site.heroText}}</p>
+    </section>
+    <nav class="footer-column" aria-label="Enlaces del sitio">
+     <h3>Explora</h3><a href="#catalogo">Catálogo</a><a href="#como-funciona">Cómo funciona</a><a href="#page-top" (click)="scrollToTop($event)">Volver al inicio</a>
+    </nav>
+    <section class="footer-column">
+     <h3>Atención</h3>
+     @if (canOrder) {<a class="footer-contact-link" [href]="whatsappLink" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3.2a12.8 12.8 0 0 0-11 19.3L3.3 28.7l6.4-1.7A12.8 12.8 0 1 0 16 3.2Z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M11.2 9.5c-.5 0-1 .2-1.4.7-.5.5-1.3 1.3-1.3 3.1s1.3 3.6 1.5 3.8c.2.3 2.5 4 6.2 5.4 3.1 1.2 3.7 1 4.4.9.7-.1 2.2-.9 2.5-1.8.3-.9.3-1.7.2-1.8-.1-.2-.5-.3-1-.6-.5-.2-2.2-1.1-2.6-1.2-.3-.1-.6-.2-.8.2-.2.5-.9 1.2-1.1 1.5-.2.3-.4.3-.8.1-.5-.2-1.7-.6-3.2-2-1.2-1-2-2.3-2.2-2.7-.2-.4 0-.6.2-.8.2-.2.5-.6.7-.8.2-.3.2-.5.4-.8.1-.3 0-.6 0-.8-.1-.2-.8-1.9-1.1-2.6-.3-.7-.6-.6-.8-.6h-.7Z" fill="currentColor"/></svg>
+      Escríbenos por WhatsApp
+     </a>}
+     <span class="footer-country">Atención en Colombia</span>
+    </section>
+    @if (site.socials.instagram || site.socials.facebook || site.socials.tiktok) {<section class="footer-column footer-social">
+     <h3>Síguenos</h3><div class="social-links">
+      @if (site.socials.instagram) {<a [href]="site.socials.instagram" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle class="social-dot" cx="17.5" cy="6.5" r="1"/></svg></a>}
+      @if (site.socials.facebook) {<a [href]="site.socials.facebook" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 21v-8h2.7l.4-3h-3.1V8.1c0-.9.3-1.4 1.5-1.4h1.7v-2.8c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.3V10H7.2v3h2.8v8z"/></svg></a>}
+      @if (site.socials.tiktok) {<a [href]="site.socials.tiktok" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3v11.2a3.3 3.3 0 1 1-2.6-3.2V8.3a7 7 0 1 0 5.7 6.8V8.8c1.2.9 2.7 1.4 4.3 1.4V7.1c-2.8-.1-4.8-1.8-5.2-4.1z"/></svg></a>}
+     </div>
+    </section>}
+   </div>
+   <div class="footer-bottom"><span>© {{currentYear}} {{site.brand}}</span><span>{{site.footerNote}}</span></div>
+  </div>
+ </footer>`
 })
 export class AppComponent implements OnInit {
  site=SITE;
+ currentYear=new Date().getFullYear();
  heroSrc=/^https?:\/\//i.test(SITE.heroImage.trim())?SITE.heroImage.trim():'';
  heroOk=true;
  status: 'loading'|'ready'|'error'='loading';

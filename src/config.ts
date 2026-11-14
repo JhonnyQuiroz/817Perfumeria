@@ -47,6 +47,12 @@ export const SITE = {
   // Imagen opcional del encabezado: ruta bajo public/ (ej. '/img/logo.png') o URL completa.
   logoImage: 'https://scontent.cdninstagram.com/v/t51.82787-19/718726423_17915920845386464_6042553732865608044_n.jpg?stp=dst-jpg_s150x150_tt6&_nc_cat=104&ig_cache_key=GBfl1irgMtBhb6Y-AGxJqu_adttTbmNDAQAB1501500j-ccb7-5&ccb=7-5&_nc_sid=669407&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDgwLkMzIn0%3D&_nc_ohc=tGimx1vnjL4Q7kNvwG5vihn&_nc_oc=Adr7cNtdfg5L1C1YCSt9gV9jfHXfXn75gyee0O3s200c-3B0TJqbiqEjzrOHgmRHJfA&_nc_zt=24&_nc_ht=scontent.cdninstagram.com&_nc_gid=mKkpo3j_ayTT8tqVFSbFTA&_nc_ss=7b689&_nc_ct=RQosPBUCFQIAAAA&oh=00_AQRtMzNzWYhQ6UTMkkBcW4SSfkWtmIfKVOUka7WZs8hK1A&oe=6AFD9FD4',
   logoImageAlt: 'Logo 817 Perfumería',
+  // Pega aquí las URLs públicas de tus perfiles para activar cada icono del footer.
+  socials: {
+    instagram: '',
+    facebook: '',
+    tiktok: '',
+  },
   eyebrow: 'Catálogo · Colombia',
   titleStart: 'Encuentra lo que ',
   titleEm: 'realmente',
