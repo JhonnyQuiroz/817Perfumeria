@@ -19,6 +19,11 @@ function editDistance(a: string,b: string): number {
  return previous[b.length];
 }
 
+function imageSource(source: string): string {
+ const value=source.trim();
+ return /^https?:\/\//i.test(value)||/^\/(?!\/)/.test(value)?value:'';
+}
+
 @Component({
  selector: 'app-root', standalone: true,
  template: `
@@ -56,16 +61,16 @@ function editDistance(a: string,b: string): number {
   </section>}
   
 
-  <section class="hero wrap">
+  <section class="hero">
+   @if (heroDesktopSrc && heroOk) {<picture class="hero-media">
+    @if (heroMobileSrc) {<source media="(max-width: 700px)" [srcset]="heroMobileSrc">}
+    <img [src]="heroDesktopSrc" [alt]="site.heroImageAlt" referrerpolicy="no-referrer" (error)="heroOk=false">
+   </picture>} @else {<div class="visual-fallback hero-fallback" aria-hidden="true"><i></i><i></i><i></i></div>}
    <div class="copy">
     <div class="eyebrow">{{site.eyebrow}}</div>
     <h1>{{site.titleStart}}<em>{{site.titleEm}}</em>{{site.titleEnd}}</h1>
     <p class="lead">{{site.heroText}}</p>
     <div class="stats">@for (s of site.stats; track $index) {<div><b>{{s.value}}</b><span>{{s.label}}</span></div>}</div>
-   </div>
-   <div class="visual">
-    @if (heroSrc && heroOk) {<img [src]="heroSrc" [alt]="site.heroImageAlt" referrerpolicy="no-referrer" (error)="heroOk=false">}
-    @else {<div class="visual-fallback" aria-hidden="true"><i></i><i></i><i></i></div>}
    </div>
   </section>
 
@@ -101,7 +106,14 @@ function editDistance(a: string,b: string): number {
       @if (sizesFor(p).length && isInspired(p)) {<div class="sizes" role="group" aria-label="Tamaño">@for (z of sizesFor(p); track z) {<button type="button" class="size" [class.on]="z===sizeOf(p)" [attr.aria-pressed]="z===sizeOf(p)" [disabled]="!p.available" (click)="$event.stopPropagation(); pick(p,z)">{{z}}</button>}</div>}
       <div class="prow"><span class="pr">@if (hasCardDiscount(p)) {<s>{{cardRegularLabel(p)}}</s>}<strong>{{cardPriceLabel(p)}}</strong></span>@if (p.available) {<button type="button" class="btn" [class.done]="added===lineKey(p)" (click)="$event.stopPropagation(); addFromCard(p)">{{added===lineKey(p)?'Agregado ✓':'Agregar'}}</button>}</div></div>
     </article>} @empty {<p class="state">No hay productos con estos filtros. <button type="button" class="link-btn" (click)="clearFilters()">Limpiar filtros</button></p>}
-   </div>}
+   </div>
+    @if (totalPages>1) {<nav class="pagination" aria-label="Páginas del catálogo">
+      <button type="button" class="page-control" [disabled]="page===1" (click)="setPage(page-1)" aria-label="Página anterior">‹</button>
+      @for (pageNumber of pageNumbers; track pageNumber) {<button type="button" class="page-number" [class.active]="pageNumber===page" [attr.aria-current]="pageNumber===page?'page':null" [attr.aria-label]="'Página '+pageNumber" (click)="setPage(pageNumber)">{{pageNumber}}</button>}
+      <button type="button" class="page-control" [disabled]="page===totalPages" (click)="setPage(page+1)" aria-label="Página siguiente">›</button>
+      <span class="page-status">Página {{page}} de {{totalPages}}</span>
+    </nav>}
+   }
   </section>
  </main>
  @if (count>0 && !cartOpen) {<button type="button" class="fab" (click)="openCart()">Ver pedido · {{count}}</button>}
@@ -186,7 +198,8 @@ function editDistance(a: string,b: string): number {
 export class AppComponent implements OnInit {
  site=SITE;
  currentYear=new Date().getFullYear();
- heroSrc=/^https?:\/\//i.test(SITE.heroImage.trim())?SITE.heroImage.trim():'';
+ heroDesktopSrc=imageSource(SITE.heroImageDesktop)||imageSource(SITE.heroImageMobile);
+ heroMobileSrc=imageSource(SITE.heroImageMobile);
  heroOk=true;
  status: 'loading'|'ready'|'error'='loading';
  products: Product[]=[];
@@ -194,7 +207,10 @@ export class AppComponent implements OnInit {
  gender: ''|'dama'|'caballero'='';
  onlyDisc=false;
  sort: 'none'|'asc'|'desc'='none';
+ filteredProducts: Product[]=[];
  shown: Product[]=[];
+ page=1;
+ readonly pageSize=12;
  showDama=false; showCaballero=false; showDiscount=false;
  demo=!CONFIG.sheetCsvUrl;
  canOrder=!!CONFIG.whatsapp;
@@ -248,9 +264,21 @@ export class AppComponent implements OnInit {
  get searchResults(): Product[] {
   const query=norm(this.searchQuery);
   if (!query) return [];
-  return this.shown.filter(p=>this.matchesSearch(p.name,query))
+  return this.filteredProducts.filter(p=>this.matchesSearch(p.name,query))
    .sort((a,b)=>this.searchRank(a,query)-this.searchRank(b,query)||a.name.localeCompare(b.name,CONFIG.locale))
    .slice(0,8);
+ }
+ get totalPages(): number { return Math.ceil(this.filteredProducts.length/this.pageSize); }
+ get pageNumbers(): number[] {
+  const count=Math.min(this.totalPages,5);
+  const start=Math.min(Math.max(1,this.page-2),Math.max(1,this.totalPages-count+1));
+  return Array.from({length:count},(_,index)=>start+index);
+ }
+ setPage(page: number): void {
+  if (!this.totalPages) return;
+  this.page=Math.min(Math.max(1,page),this.totalPages);
+  this.updateShown();
+  document.getElementById('catalogo')?.scrollIntoView({behavior:this.scrollBehavior(),block:'start'});
  }
  private matchesSearch(name: string,query: string): boolean {
   const words=norm(name).split(/\s+/);
@@ -292,7 +320,13 @@ export class AppComponent implements OnInit {
     return (pa-pb)*dir;
    });
   }
-  this.shown=list;
+  this.filteredProducts=list;
+  this.page=1;
+  this.updateShown();
+ }
+ private updateShown(): void {
+  const start=(this.page-1)*this.pageSize;
+  this.shown=this.filteredProducts.slice(start,start+this.pageSize);
  }
  /** Precio para ordenar: el más bajo del producto con su descuento (no cambia al elegir tamaño). */
  private sortPrice(p: Product): number|null {

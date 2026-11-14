@@ -34,6 +34,8 @@ Al tocar una tarjeta se abre el detalle para ver la imagen, descripción, dispon
 
 En las categorías distintas de `Inspirados`, la tarjeta muestra los tamaños disponibles bajo el nombre. En el detalle se debe seleccionar un tamaño antes de agregar el producto. La búsqueda del encabezado admite coincidencias aproximadas y muestra hasta ocho resultados con foto y el precio más bajo. El encabezado permanece fijo al desplazarse; el botón de flecha permite volver a los filtros, y el nombre de la tienda vuelve al inicio sin limpiar las selecciones.
 
+El catálogo muestra 12 productos por página. Al cambiar una categoría, filtro, búsqueda u orden, vuelve a la primera página; la selección de tamaños y el pedido se conservan.
+
 Publicar: Archivo → Compartir → Publicar en la web → elige la pestaña → formato **CSV** → Publicar. Copia la URL.
 
 ## 2. Configurar
@@ -64,7 +66,7 @@ El código de pedido guarda la **fecha y hora, los productos (id, tamaño y cant
 - Colores y tipografías: variables al inicio de `src/styles.css` (`:root`).
 - Textos del sitio (marca, titular, estadísticas, pasos): `SITE` en `src/config.ts`.
 - Foto del encabezado: cambia `SITE.logoImage` en `src/config.ts`. Para una imagen del proyecto, guarda el archivo en `public/img/` y usa una ruta como `/img/logo.png`; también puedes pegar una URL pública `https://...`. El texto alternativo se configura en `SITE.logoImageAlt`.
-- Imagen principal: pega el enlace (https://...) en `SITE.heroImage` de `src/config.ts`. Si queda vacío se usa un fondo decorativo.
+- Imágenes del hero: configura `SITE.heroImageDesktop` y `SITE.heroImageMobile` en `src/config.ts`. Puedes usar URLs públicas o archivos en `public/` (por ejemplo, `/img/hero-desktop.webp`). Si dejas vacía la imagen móvil, se reutiliza la de escritorio; si ambas están vacías, se usa un fondo decorativo. Para evitar recortes, recomendamos escritorio en **2.4:1** (por ejemplo, **2400 × 1000 px**) y móvil en **9:16** (por ejemplo, **1080 × 1920 px**).
 - Estructura HTML: `src/main.ts`.
 - Los datos (Sheet) y el diseño están separados: puedes rehacer uno sin tocar el otro.
 
