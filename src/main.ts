@@ -192,7 +192,7 @@ export class AppComponent implements OnInit {
   this.detailProduct=p; this.detailSize=this.sizeOf(p); this.detailImageOk=true;
   document.body.style.overflow='hidden';
  }
- openProductFromKey(p: Product,event: KeyboardEvent): void {
+ openProductFromKey(p: Product,event: Event): void {
   if (event.target!==event.currentTarget) return;
   event.preventDefault();
   this.openProduct(p);
