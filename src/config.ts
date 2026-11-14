@@ -61,7 +61,7 @@ export const SITE = {
   // Imágenes del hero: acepta una URL pública o una ruta de public/ (ej. '/img/hero-desktop.webp').
   // La imagen móvil es opcional; si queda vacía se reutiliza la imagen de escritorio.
   heroImageDesktop: 'https://hips.hearstapps.com/hmg-prod/images/4966c149-042f-41a3-b7b9-f9f4d086a488.png', // relación de aspecto 2.4:1 (2400 × 1000 px)
-  heroImageMobile: 'https://maferperfumes.com/wp-content/uploads/2026/11/mafer-campana-escena-dg.webp', //relación de aspecto 9:16 (1080 × 1920 px).
+  heroImageMobile: 'https://lmd.com.co/cdn/shop/files/boss_bottled_beyond_edp_100ml_original.webp?v=1758412882&width=416', //relación de aspecto 9:16 (1080 × 1920 px).
   heroImageAlt: 'Imagen principal del catálogo',
   stats: [
     { value: '100%', label: 'Productos originales' },
