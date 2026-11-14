@@ -50,8 +50,8 @@ export const SITE = {
   // Pega aquí las URLs públicas de tus perfiles para activar cada icono del footer.
   socials: {
     instagram: 'https://www.instagram.com/817perfumeria/',
-    facebook: '',
-    tiktok: '',
+    facebook: 'https://www.facebook.com/jhonnye2000/?locale=es_LA',
+    tiktok: 'https://www.tiktok.com/@817perfumeria',
   },
   eyebrow: 'Catálogo · Colombia',
   titleStart: 'Encuentra lo que ',
