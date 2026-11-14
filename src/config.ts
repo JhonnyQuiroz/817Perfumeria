@@ -49,7 +49,7 @@ export const SITE = {
   logoImageAlt: 'Logo 817 Perfumería',
   // Pega aquí las URLs públicas de tus perfiles para activar cada icono del footer.
   socials: {
-    instagram: '',
+    instagram: 'https://www.instagram.com/817perfumeria/',
     facebook: '',
     tiktok: '',
   },
