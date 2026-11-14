@@ -60,10 +60,10 @@ export const SITE = {
   heroText: 'Una selección cuidada de productos originales. Explora el catálogo, elige y pide directamente por WhatsApp.',
   // Imágenes del hero: acepta una URL pública o una ruta de public/ (ej. '/img/hero-desktop.webp').
   // La imagen móvil es opcional; si queda vacía se reutiliza la imagen de escritorio.
-  heroImageDesktop: 'https://media.falabella.com/falabellaCO/inpage_media/73747603-bloque_1/public?wid=1160', // relación de aspecto 2.4:1 (2400 × 1000 px)
+  heroImageDesktop: 'https://media.wonderlandmagazine.com/uploads/2025/06/241104_RW_020_0911_04_RVB-scaled.jpeg', // relación de aspecto 2.4:1 (2400 × 1000 px)
   //https://www.sinabrochar.com/wp-content/uploads/2016/12/Sauvage.jpg
   //https://hips.hearstapps.com/hmg-prod/images/4966c149-042f-41a3-b7b9-f9f4d086a488.png
-  heroImageMobile: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPrtPH1ceFFQqxqbcJW6uLIq8LLXChGU5m4brVQ248rKrIGMZYWxNVrUs&s=10', //relación de aspecto 9:16 (1080 × 1920 px).
+  heroImageMobile: 'https://http2.mlstatic.com/D_NQ_NP_703986-MLA89509260516_082025-O.webp', //relación de aspecto 9:16 (1080 × 1920 px).
   //https://lmd.com.co/cdn/shop/files/boss_bottled_beyond_edp_100ml_original.webp?v=1758412882&width=416
   heroImageAlt: 'Imagen principal del catálogo',
   stats: [
