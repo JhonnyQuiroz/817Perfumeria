@@ -60,7 +60,7 @@ export const SITE = {
   heroText: 'Una selección cuidada de productos originales. Explora el catálogo, elige y pide directamente por WhatsApp.',
   // Imágenes del hero: acepta una URL pública o una ruta de public/ (ej. '/img/hero-desktop.webp').
   // La imagen móvil es opcional; si queda vacía se reutiliza la imagen de escritorio.
-  heroImageDesktop: 'https://media.revistagq.com/photos/5ca600dbf552a1220b32f46e/master/w_1600%2Cc_limit/johnny_depp_dior_7665.jpg', // relación de aspecto 2.4:1 (2400 × 1000 px)
+  heroImageDesktop: 'https://hips.hearstapps.com/hmg-prod/images/home-dior-1643269404.jpg?crop=0.888888888888889xw:1xh;center,top&resize=1200:*', // relación de aspecto 2.4:1 (2400 × 1000 px)
   //https://www.sinabrochar.com/wp-content/uploads/2016/12/Sauvage.jpg
   //https://hips.hearstapps.com/hmg-prod/images/4966c149-042f-41a3-b7b9-f9f4d086a488.png
   heroImageMobile: 'https://lmd.com.co/cdn/shop/files/boss_bottled_beyond_edp_100ml_original.webp?v=1758412882&width=416', //relación de aspecto 9:16 (1080 × 1920 px).
