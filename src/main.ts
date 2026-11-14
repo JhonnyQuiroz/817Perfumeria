@@ -9,11 +9,38 @@ interface CartRow { line: CartLine; unit: number | null; regular: number | null;
 interface Decoded { code: string; when: string; total: string; unpriced: boolean; items: { name: string; size: string; qty: number }[]; row: string; }
 const STORE_KEY = 'cart-v1';
 
+function editDistance(a: string,b: string): number {
+ let previous=Array.from({length:b.length+1},(_,i)=>i);
+ for (let i=1;i<=a.length;i++) {
+  const current=[i];
+  for (let j=1;j<=b.length;j++) current[j]=Math.min(current[j-1]+1,previous[j]+1,previous[j-1]+(a[i-1]===b[j-1]?0:1));
+  previous=current;
+ }
+ return previous[b.length];
+}
+
 @Component({
  selector: 'app-root', standalone: true,
  template: `
- <header class="header wrap"><a class="logo" href="#">{{site.brand}}</a>
-  <nav><a class="hide-sm" href="#como-funciona">Cómo funciona</a><a href="#catalogo">Catálogo</a>
+ <header id="page-top" class="header">
+  <a class="logo" [class.with-image]="!!site.logoImage" href="#page-top" (click)="scrollToTop($event)">
+   @if (site.logoImage) {<img [src]="site.logoImage" [alt]="site.logoImageAlt" (error)="site.logoImage=''">}
+   <span>{{site.brand}}</span>
+  </a>
+  <div class="header-search-wrap" (click)="$event.stopPropagation()">
+   <div class="header-search">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
+    <input type="search" aria-label="Buscar perfumes" placeholder="Buscar perfumes..." [value]="searchQuery" (input)="setSearch($event)" (focus)="searchActive=true" (keydown.escape)="closeSearch()">
+    @if (searchQuery) {<button type="button" class="search-clear" aria-label="Limpiar búsqueda" (click)="clearSearch()">×</button>}
+   </div>
+   @if (searchActive && searchQuery.trim()) {<div class="search-results">
+    @for (p of searchResults; track $index) {<button type="button" class="search-result" (click)="selectSearchResult(p)">
+     <span class="search-image">@if (p.image) {<img [src]="p.image" [alt]="p.name" (error)="p.image=''">} @else {<span>{{p.name.charAt(0)}}</span>}</span>
+     <b>{{p.name}}</b><strong>{{searchPrice(p)}}</strong>
+    </button>} @empty {<p class="search-empty">No encontramos perfumes con ese nombre.</p>}
+   </div>}
+  </div>
+  <nav><a class="hide-sm" href="#como-funciona">Cómo funciona</a><a class="hide-sm" href="#catalogo">Catálogo</a>
    <button type="button" class="cart-btn" (click)="openCart()">Pedido@if (count>0) {<b>{{count}}</b>}</button></nav></header>
  <main>
   @if (showDecoder) {<section id="decodificar" class="section wrap decoder">
@@ -50,7 +77,7 @@ const STORE_KEY = 'cart-v1';
   <section id="catalogo" class="section wrap">
    <div class="eyebrow">{{site.catalogLabel}}</div><h2>{{site.catalogTitle}}</h2>
    @if (demo) {<p class="demo-note">Modo demostración. Pega la URL de tu hoja publicada en <code>src/config.ts</code> para ver tus productos.</p>}
-   @if (status==='ready') {<div class="filters">
+   @if (status==='ready') {<div id="catalog-filters" class="filters">
     @if (categories.length>2) {<div class="chips">@for (c of categories; track c) {<button type="button" class="chip" [class.on]="c===category" (click)="setCategory(c)">{{c}}</button>}</div>}
     <div class="chips row2">
      @if (showDama) {<button type="button" class="chip" [class.on]="gender==='dama'" [attr.aria-pressed]="gender==='dama'" (click)="toggleGender('dama')">Dama</button>}
@@ -68,9 +95,11 @@ const STORE_KEY = 'cart-v1';
     @for (p of shown; track $index) {<article class="product" [class.sold]="!p.available" [attr.aria-label]="'Ver detalles de '+p.name" tabindex="0" (click)="openProduct(p)" (keydown.enter)="openProductFromKey(p,$event)" (keydown.space)="openProductFromKey(p,$event)">
      <div class="thumb">@if (p.image) {<img [src]="p.image" [alt]="p.name" loading="lazy" referrerpolicy="no-referrer" (error)="p.image=''">} @else {<span>{{p.name.charAt(0)}}</span>}
       @if (p.discount>0 && p.available) {<b class="tag disc">Descuento {{pct(p.discount)}}</b>}@if (!p.available) {<b class="tag off">Agotado</b>}</div>
-     <div class="pbody"><small>{{p.category}}</small><h3>{{p.name}}</h3><p>{{p.description}}</p>
-      @if (sizesFor(p).length) {<div class="sizes" role="group" aria-label="Tamaño">@for (z of sizesFor(p); track z) {<button type="button" class="size" [class.on]="z===sizeOf(p)" [attr.aria-pressed]="z===sizeOf(p)" [disabled]="!p.available" (click)="$event.stopPropagation(); pick(p,z)">{{z}}</button>}</div>}
-      <div class="prow"><span class="pr">@if (hasDisc(p)) {<s>{{regularLabel(p)}}</s>}<strong>{{priceLabel(p)}}</strong></span>@if (p.available) {<button type="button" class="btn" [class.done]="added===lineKey(p)" (click)="$event.stopPropagation(); addFromCard(p)">{{added===lineKey(p)?'Agregado ✓':'Agregar'}}</button>}</div></div>
+     <div class="pbody"><small>{{p.category}}</small><h3>{{p.name}}</h3>
+      @if (sizesFor(p).length && !isInspired(p)) {<div class="product-sizes"><b>Tamaños</b><span>{{sizesFor(p).join(', ')}}</span></div>}
+      <p>{{p.description}}</p>
+      @if (sizesFor(p).length && isInspired(p)) {<div class="sizes" role="group" aria-label="Tamaño">@for (z of sizesFor(p); track z) {<button type="button" class="size" [class.on]="z===sizeOf(p)" [attr.aria-pressed]="z===sizeOf(p)" [disabled]="!p.available" (click)="$event.stopPropagation(); pick(p,z)">{{z}}</button>}</div>}
+      <div class="prow"><span class="pr">@if (hasCardDiscount(p)) {<s>{{cardRegularLabel(p)}}</s>}<strong>{{cardPriceLabel(p)}}</strong></span>@if (p.available) {<button type="button" class="btn" [class.done]="added===lineKey(p)" (click)="$event.stopPropagation(); addFromCard(p)">{{added===lineKey(p)?'Agregado ✓':'Agregar'}}</button>}</div></div>
     </article>} @empty {<p class="state">No hay productos con estos filtros. <button type="button" class="link-btn" (click)="clearFilters()">Limpiar filtros</button></p>}
    </div>}
   </section>
@@ -79,6 +108,9 @@ const STORE_KEY = 'cart-v1';
  @if (canOrder) {<a class="whatsapp-fab" [class.with-cart]="count>0 && !cartOpen" [href]="whatsappLink" target="_blank" rel="noopener noreferrer" aria-label="Abrir WhatsApp">
   <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 3.2a12.8 12.8 0 0 0-11 19.3L3.3 28.7l6.4-1.7A12.8 12.8 0 1 0 16 3.2Z" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M11.2 9.5c-.5 0-1 .2-1.4.7-.5.5-1.3 1.3-1.3 3.1s1.3 3.6 1.5 3.8c.2.3 2.5 4 6.2 5.4 3.1 1.2 3.7 1 4.4.9.7-.1 2.2-.9 2.5-1.8.3-.9.3-1.7.2-1.8-.1-.2-.5-.3-1-.6-.5-.2-2.2-1.1-2.6-1.2-.3-.1-.6-.2-.8.2-.2.5-.9 1.2-1.1 1.5-.2.3-.4.3-.8.1-.5-.2-1.7-.6-3.2-2-1.2-1-2-2.3-2.2-2.7-.2-.4 0-.6.2-.8.2-.2.5-.6.7-.8.2-.3.2-.5.4-.8.1-.3 0-.6 0-.8-.1-.2-.8-1.9-1.1-2.6-.3-.7-.6-.6-.8-.6h-.7Z" fill="currentColor"/></svg>
  </a>}
+ @if (showBackToFilters && status==='ready') {<button type="button" class="back-to-filters" (click)="scrollToFilters()" aria-label="Volver a los filtros" title="Volver a los filtros">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 11 7-7 7 7M12 4v16"/></svg>
+ </button>}
  @if (detailProduct; as p) {<div class="product-overlay" (click)="closeProduct()"></div>
  <section class="product-dialog" role="dialog" aria-modal="true" aria-labelledby="detail-title">
   <button type="button" class="x detail-close" (click)="closeProduct()" aria-label="Cerrar">×</button>
@@ -90,9 +122,11 @@ const STORE_KEY = 'cart-v1';
     <small>{{p.category}}</small><h2 id="detail-title">{{p.name}}</h2>
     @if (p.description) {<p class="detail-description">{{p.description}}</p>}
     <p class="detail-meta">@if (p.gender) {<span>{{genderLabel(p.gender)}}</span>}<span>{{p.available?'Disponible':'Agotado'}}</span></p>
-    @if (sizesFor(p).length) {<div class="detail-sizes"><b>Tamaño</b><div class="sizes" role="group" aria-label="Tamaño">@for (z of sizesFor(p); track z) {<button type="button" class="size" [class.on]="z===detailSize" [attr.aria-pressed]="z===detailSize" (click)="detailSize=z">{{z}}</button>}</div></div>}
-    <div class="detail-price"><span class="pr">@if (hasDisc(p,detailSize)) {<s>{{regularLabel(p,detailSize)}}</s>}<strong>{{priceLabel(p,detailSize)}}</strong></span></div>
-    <button type="button" class="btn solid detail-add" [disabled]="!p.available" (click)="addFromDetail()">{{p.available?'Agregar al pedido':'Agotado'}}</button>
+    @if (sizesFor(p).length) {<div class="detail-sizes"><b>Tamaño</b><div class="sizes" role="group" aria-label="Tamaño">@for (z of sizesFor(p); track z) {<button type="button" class="size" [class.on]="z===detailSize" [attr.aria-pressed]="z===detailSize" (click)="pickDetailSize(z)">{{z}}</button>}</div>
+     @if (!detailSize) {<p class="detail-size-error" role="status">Selecciona un tamaño antes de agregar el perfume al pedido.</p>}
+    </div>}
+    <div class="detail-price"><span class="pr">@if (detailHasDiscount(p)) {<s>{{detailRegularLabel(p)}}</s>}<strong>{{detailPriceLabel(p)}}</strong></span></div>
+    <button type="button" class="btn solid detail-add" [disabled]="!p.available || (sizesFor(p).length>0 && !detailSize)" (click)="addFromDetail()">{{!p.available?'Agotado':(sizesFor(p).length>0 && !detailSize?'Selecciona un tamaño':'Agregar al pedido')}}</button>
    </div>
   </div>
  </section>}
@@ -131,6 +165,9 @@ export class AppComponent implements OnInit {
  private wa=`https://wa.me/${CONFIG.whatsapp}`;
  whatsappLink=this.wa;
  private money=new Intl.NumberFormat(CONFIG.locale,{style:'currency',currency:CONFIG.currency,maximumFractionDigits:0});
+ searchQuery='';
+ searchActive=false;
+ showBackToFilters=false;
 
  // Carrito
  cart: CartLine[]=[];
@@ -147,6 +184,11 @@ export class AppComponent implements OnInit {
  showDecoder=location.hash==='#decodificar';
  decErr=''; decRes: Decoded|null=null; copied=false;
  @HostListener('window:hashchange') onHash(): void { this.showDecoder=location.hash==='#decodificar'; }
+ @HostListener('window:scroll') onScroll(): void { this.showBackToFilters=window.scrollY>420; }
+ @HostListener('document:click',['$event']) onDocumentClick(event: Event): void {
+  const target=event.target;
+  if (!(target instanceof Element)||!target.closest('.header-search-wrap')) this.searchActive=false;
+ }
 
  get categories(): string[] { return ['Todos', 'Inspirados', 'Replica 1.1', 'Original']; }
 
@@ -159,12 +201,50 @@ export class AppComponent implements OnInit {
  toggleDisc(): void { this.onlyDisc=!this.onlyDisc; this.refresh(); }
  setSort(v: string): void { this.sort=v==='asc'||v==='desc'?v:'none'; this.refresh(); }
  clearFilters(): void { this.category='Todos'; this.gender=''; this.onlyDisc=false; this.refresh(); }
+ setSearch(event: Event): void {
+  if (!(event.target instanceof HTMLInputElement)) return;
+  this.searchQuery=event.target.value;
+  this.searchActive=true;
+  this.refresh();
+ }
+ clearSearch(): void { this.searchQuery=''; this.searchActive=false; this.refresh(); }
+ closeSearch(): void { this.searchActive=false; }
+ get searchResults(): Product[] {
+  const query=norm(this.searchQuery);
+  if (!query) return [];
+  return this.shown.filter(p=>this.matchesSearch(p.name,query))
+   .sort((a,b)=>this.searchRank(a,query)-this.searchRank(b,query)||a.name.localeCompare(b.name,CONFIG.locale))
+   .slice(0,8);
+ }
+ private matchesSearch(name: string,query: string): boolean {
+  const words=norm(name).split(/\s+/);
+  return query.split(/\s+/).every(term=>words.some(word=>{
+   if (word.includes(term)) return true;
+   if (term.length<4||word.length<4) return false;
+   const limit=term.length>=8?2:1;
+   return Math.abs(term.length-word.length)<=limit&&editDistance(term,word)<=limit;
+  }));
+ }
+ private searchRank(p: Product,query: string): number {
+  const name=norm(p.name);
+  return name===query?0:name.startsWith(query)?1:name.includes(query)?2:3;
+ }
+ selectSearchResult(p: Product): void { this.openProduct(p); }
+ scrollToTop(event: Event): void {
+  event.preventDefault(); this.searchActive=false;
+  window.scrollTo({top:0,behavior:'smooth'});
+ }
+ scrollToFilters(): void {
+  this.searchActive=false;
+  document.getElementById('catalog-filters')?.scrollIntoView({behavior:'smooth',block:'start'});
+ }
  /** Aplica categoría, género, descuento y orden. Los de género "Unisex" salen en Dama y en Caballero. */
  private refresh(): void {
   let list=this.products.filter(p=>
    (this.category==='Todos'||p.category===this.category)
    &&(!this.gender||p.gender===this.gender||p.gender==='unisex')
-   &&(!this.onlyDisc||p.discount>0));
+   &&(!this.onlyDisc||p.discount>0)
+   &&(!norm(this.searchQuery)||this.matchesSearch(p.name,norm(this.searchQuery))));
   if (this.sort!=='none') {
    const dir=this.sort==='asc'?1:-1;
    list=[...list].sort((a,b)=>{
@@ -186,10 +266,17 @@ export class AppComponent implements OnInit {
   const hit=Object.entries(CONFIG.sizes).find(([cat])=>norm(cat)===norm(p.category));
   return hit?hit[1]:Object.keys(p.sizePrices).sort((a,b)=>parseInt(a,10)-parseInt(b,10)).map(s=>s.replace(/(\d+)ml/i,'$1 ml'));
  }
- sizeOf(p: Product): string { return this.sizeSel[p.name]??this.sizesFor(p)[0]??''; }
+ isInspired(p: Product): boolean { return norm(p.category)==='inspirados'; }
+ sizeOf(p: Product): string { return this.sizeSel[p.name]??(this.isInspired(p)?this.sizesFor(p)[0]??'':''); }
  pick(p: Product,size: string): void { this.sizeSel[p.name]=size; }
+ pickDetailSize(size: string): void {
+  this.detailSize=size;
+  if (this.detailProduct) this.sizeSel[this.detailProduct.name]=size;
+ }
  openProduct(p: Product): void {
-  this.detailProduct=p; this.detailSize=this.sizeOf(p); this.detailImageOk=true;
+  this.detailProduct=p;
+  this.detailSize=this.isInspired(p)?this.sizeOf(p):(this.sizeSel[p.name]??'');
+  this.detailImageOk=true; this.searchActive=false;
   document.body.style.overflow='hidden';
  }
  openProductFromKey(p: Product,event: Event): void {
@@ -202,8 +289,7 @@ export class AppComponent implements OnInit {
   document.body.style.overflow=this.cartOpen?'hidden':'';
  }
  requiresSizeChoice(p: Product): boolean {
-  const category=norm(p.category);
-  return (category==='original'||category==='replica 1.1')&&this.sizesFor(p).length>1;
+  return !this.isInspired(p)&&this.sizesFor(p).length>0;
  }
  addFromCard(p: Product): void {
   if (this.requiresSizeChoice(p)) { this.openProduct(p); return; }
@@ -211,6 +297,7 @@ export class AppComponent implements OnInit {
  }
  addFromDetail(): void {
   if (!this.detailProduct) return;
+  if (!this.detailProduct.available||(this.sizesFor(this.detailProduct).length>0&&!this.detailSize)) return;
   this.add(this.detailProduct,this.detailSize);
   this.closeProduct();
  }
@@ -236,6 +323,54 @@ export class AppComponent implements OnInit {
   const n=this.unitPrice(p,size);
   return n!==null?this.money.format(n):(p.priceText||'Consultar');
  }
+ private lowestVariantPrice(p: Product,regular=false): number|null {
+  const sizes=this.sizesFor(p);
+  const prices=(sizes.length?sizes:['']).map(size=>regular?this.regularPrice(p,size):this.unitPrice(p,size)).filter((n): n is number=>n!==null);
+  return prices.length?Math.min(...prices):null;
+ }
+ private lowestPriceSize(p: Product): string {
+  const sizes=this.sizesFor(p);
+  if (!sizes.length) return '';
+  return sizes.reduce((best,size)=>{
+   const price=this.unitPrice(p,size),bestPrice=this.unitPrice(p,best);
+   return price!==null&&(bestPrice===null||price<bestPrice)?size:best;
+  },sizes[0]);
+ }
+ searchPrice(p: Product): string {
+  const price=this.lowestVariantPrice(p);
+  return price!==null?this.money.format(price):(p.priceText||'Consultar');
+ }
+ hasCardDiscount(p: Product): boolean {
+  return p.discount>0&&this.cardRegularPrice(p)!==null;
+ }
+ private cardRegularPrice(p: Product): number|null {
+  return this.sizesFor(p).length&&!this.isInspired(p)?this.lowestVariantPrice(p,true):this.regularPrice(p,this.sizeOf(p));
+ }
+ cardRegularLabel(p: Product): string {
+  const price=this.cardRegularPrice(p);
+  return price!==null?this.money.format(price):'';
+ }
+ cardPriceLabel(p: Product): string {
+  const sizes=this.sizesFor(p);
+  if (!sizes.length||this.isInspired(p)) return this.priceLabel(p);
+  const price=this.lowestVariantPrice(p);
+  return price!==null?`${sizes.length>1?'Desde ':''}${this.money.format(price)}`:(p.priceText||'Consultar');
+ }
+ detailHasDiscount(p: Product): boolean {
+  const size=this.detailSize||this.lowestPriceSize(p);
+  return p.discount>0&&this.regularPrice(p,size)!==null;
+ }
+ detailRegularLabel(p: Product): string {
+  const size=this.detailSize||this.lowestPriceSize(p);
+  const price=this.regularPrice(p,size);
+  return price!==null?this.money.format(price):'';
+ }
+ detailPriceLabel(p: Product): string {
+  if (this.detailSize) return this.priceLabel(p,this.detailSize);
+  const sizes=this.sizesFor(p),price=this.lowestVariantPrice(p);
+  if (price===null) return p.priceText||'Consultar';
+  return `${sizes.length>1?'Desde ':''}${this.money.format(price)}`;
+ }
  lineKey(p: Product): string { return p.name+'|'+this.sizeOf(p); }
 
  // Acciones del carrito
@@ -258,6 +393,7 @@ export class AppComponent implements OnInit {
  @HostListener('document:keydown.escape') onEsc(): void {
   if (this.cartOpen) this.closeCart();
   else if (this.detailProduct) this.closeProduct();
+  else this.searchActive=false;
  }
 
  /** Recalcula totales y el mensaje de WhatsApp, y guarda el carrito. */

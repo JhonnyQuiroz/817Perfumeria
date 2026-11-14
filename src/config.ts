@@ -31,8 +31,8 @@ export const CONFIG = {
   orderPrefix: 'PED',
   timeZone: 'America/Bogota',
 
-  // Tamaños disponibles por categoría. Las categorías que no estén aquí no muestran selector.
-  // Precios por tamaño (opcional): agrega al Sheet columnas precio_30ml, precio_60ml, precio_100ml.
+  // Tamaños predeterminados por categoría (ej. Inspirados). Otros productos pueden definirlos
+  // por fila con la columna `tamanos` y precios como `precio_30ml` en el Sheet.
   // Si un tamaño no tiene precio en esas columnas, se usa el de la columna "precio".
   sizes: {
     Inspirados: ['30 ml', '60 ml', '100 ml'],
@@ -44,6 +44,9 @@ export const CONFIG = {
 // ============================================================
 export const SITE = {
   brand: '817 Perfumería',
+  // Imagen opcional del encabezado: ruta bajo public/ (ej. '/img/logo.png') o URL completa.
+  logoImage: '',
+  logoImageAlt: 'Logo 817 Perfumería',
   eyebrow: 'Catálogo · Colombia',
   titleStart: 'Encuentra lo que ',
   titleEm: 'realmente',
