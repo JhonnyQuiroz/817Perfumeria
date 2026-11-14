@@ -76,6 +76,9 @@ const STORE_KEY = 'cart-v1';
   </section>
  </main>
  @if (count>0 && !cartOpen) {<button type="button" class="fab" (click)="openCart()">Ver pedido · {{count}}</button>}
+ @if (canOrder) {<a class="whatsapp-fab" [href]="whatsappLink" target="_blank" rel="noopener noreferrer" aria-label="Abrir WhatsApp">
+  <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false"><path d="M16 3.2a12.8 12.8 0 0 0-11 19.3L3.3 28.7l6.4-1.7A12.8 12.8 0 1 0 16 3.2Z" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M11.2 9.5c-.5 0-1 .2-1.4.7-.5.5-1.3 1.3-1.3 3.1s1.3 3.6 1.5 3.8c.2.3 2.5 4 6.2 5.4 3.1 1.2 3.7 1 4.4.9.7-.1 2.2-.9 2.5-1.8.3-.9.3-1.7.2-1.8-.1-.2-.5-.3-1-.6-.5-.2-2.2-1.1-2.6-1.2-.3-.1-.6-.2-.8.2-.2.5-.9 1.2-1.1 1.5-.2.3-.4.3-.8.1-.5-.2-1.7-.6-3.2-2-1.2-1-2-2.3-2.2-2.7-.2-.4 0-.6.2-.8.2-.2.5-.6.7-.8.2-.3.2-.5.4-.8.1-.3 0-.6 0-.8-.1-.2-.8-1.9-1.1-2.6-.3-.7-.6-.6-.8-.6h-.7Z" fill="currentColor"/></svg>
+ </a>}
  @if (cartOpen) {<div class="overlay" (click)="closeCart()"></div>
  <aside class="drawer" role="dialog" aria-modal="true" aria-label="Tu pedido">
   <div class="d-head"><h3>Tu pedido</h3><button type="button" class="x" (click)="closeCart()" aria-label="Cerrar">×</button></div>
@@ -108,6 +111,7 @@ export class AppComponent implements OnInit {
  demo=!CONFIG.sheetCsvUrl;
  canOrder=!!CONFIG.whatsapp;
  private wa=`https://wa.me/${CONFIG.whatsapp}`;
+ whatsappLink=this.wa;
  private money=new Intl.NumberFormat(CONFIG.locale,{style:'currency',currency:CONFIG.currency,maximumFractionDigits:0});
 
  // Carrito
