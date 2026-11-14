@@ -63,7 +63,8 @@ export const SITE = {
   heroImageDesktop: 'https://media.falabella.com/falabellaCO/inpage_media/73747603-bloque_1/public?wid=1160', // relación de aspecto 2.4:1 (2400 × 1000 px)
   //https://www.sinabrochar.com/wp-content/uploads/2016/12/Sauvage.jpg
   //https://hips.hearstapps.com/hmg-prod/images/4966c149-042f-41a3-b7b9-f9f4d086a488.png
-  heroImageMobile: 'https://lmd.com.co/cdn/shop/files/boss_bottled_beyond_edp_100ml_original.webp?v=1758412882&width=416', //relación de aspecto 9:16 (1080 × 1920 px).
+  heroImageMobile: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPrtPH1ceFFQqxqbcJW6uLIq8LLXChGU5m4brVQ248rKrIGMZYWxNVrUs&s=10', //relación de aspecto 9:16 (1080 × 1920 px).
+  //https://lmd.com.co/cdn/shop/files/boss_bottled_beyond_edp_100ml_original.webp?v=1758412882&width=416
   heroImageAlt: 'Imagen principal del catálogo',
   stats: [
     { value: '100%', label: 'Productos originales' },
