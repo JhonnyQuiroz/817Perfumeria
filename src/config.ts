@@ -60,8 +60,8 @@ export const SITE = {
   heroText: 'Una selección cuidada de productos originales. Explora el catálogo, elige y pide directamente por WhatsApp.',
   // Imágenes del hero: acepta una URL pública o una ruta de public/ (ej. '/img/hero-desktop.webp').
   // La imagen móvil es opcional; si queda vacía se reutiliza la imagen de escritorio.
-  heroImageDesktop: 'https://pbs.twimg.com/card_img/2121354398483759104/O2gkYJlh?format=webp&name=medium', // relación de aspecto 2.4:1 (2400 × 1000 px)
-  heroImageMobile: 'https://pbs.twimg.com/card_img/2121354398483759104/O2gkYJlh?format=webp&name=medium', //relación de aspecto 9:16 (1080 × 1920 px).
+  heroImageDesktop: 'https://maferperfumes.com/wp-content/uploads/2026/11/mafer-campana-escena-dg.webp', // relación de aspecto 2.4:1 (2400 × 1000 px)
+  heroImageMobile: 'https://maferperfumes.com/wp-content/uploads/2026/11/mafer-campana-escena-dg.webp', //relación de aspecto 9:16 (1080 × 1920 px).
   heroImageAlt: 'Imagen principal del catálogo',
   stats: [
     { value: '100%', label: 'Productos originales' },
