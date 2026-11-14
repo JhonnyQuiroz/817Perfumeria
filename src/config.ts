@@ -60,7 +60,7 @@ export const SITE = {
   heroText: 'Una selección cuidada de productos originales. Explora el catálogo, elige y pide directamente por WhatsApp.',
   // Imágenes del hero: acepta una URL pública o una ruta de public/ (ej. '/img/hero-desktop.webp').
   // La imagen móvil es opcional; si queda vacía se reutiliza la imagen de escritorio.
-  heroImageDesktop: 'https://preview.redd.it/any-and-all-perfume-commercials-v0-ho54zbwp2g2e1.jpeg?auto=webp&s=0c5673407f8cc4f945b1c02185fa754d36d1d76c', // relación de aspecto 2.4:1 (2400 × 1000 px)
+  heroImageDesktop: 'https://s.yimg.com/lo/mysterio/api/9f90bff4474d611fc1175cdff547fa786e01e701d048b59c3ef91f2bc387aa73/lightyear_networkapi/resizefill_w960%3Bquality_80%3Bformat_webp/https%3A%2F%2Fs.yimg.com%2Fos%2Fcreatr-uploaded-images%2F2022-06%2Faec6e110-e880-11ec-beef-d5bd8781d45e', // relación de aspecto 2.4:1 (2400 × 1000 px)
   //https://www.sinabrochar.com/wp-content/uploads/2016/12/Sauvage.jpg
   //https://hips.hearstapps.com/hmg-prod/images/4966c149-042f-41a3-b7b9-f9f4d086a488.png
   heroImageMobile: 'https://lmd.com.co/cdn/shop/files/boss_bottled_beyond_edp_100ml_original.webp?v=1758412882&width=416', //relación de aspecto 9:16 (1080 × 1920 px).
